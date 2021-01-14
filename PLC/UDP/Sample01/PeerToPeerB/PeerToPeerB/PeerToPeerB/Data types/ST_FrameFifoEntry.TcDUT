@@ -1,0 +1,11 @@
+﻿<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.0.20">
+  <DUT Name="ST_FrameFifoEntry" Id="{8fbadcf9-767d-4d3b-b3a0-a32f01a4b3f9}">
+    <Declaration><![CDATA[TYPE ST_FrameFifoEntry :
+STRUCT
+	stRemoteAddr 	: ST_SockAddr;(* Remote address. String containing an (Ipv4) Internet Protocol dotted address and port number. *)
+	sMessage		: T_MaxString;	(* UDP packet data *)
+END_STRUCT
+END_TYPE]]></Declaration>
+    <ObjectProperties />
+  </DUT>
+</TcPlcObject>

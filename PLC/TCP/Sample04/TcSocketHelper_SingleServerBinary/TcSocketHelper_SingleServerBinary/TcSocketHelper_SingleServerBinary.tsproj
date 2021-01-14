@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<TcSmProject xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://www.beckhoff.com/schemas/2012/07/TcSmProject" TcSmVersion="1.0">
+	<Project SccProjectName="SAK" SccAuxPath="SAK" SccLocalPath="SAK" SccProvider="SAK" ProjectGUID="{26E3B106-0BFC-4BC2-9710-4F129075B78E}" ModifiedGUID="{322AA2CA-86C4-410C-B918-550CA4DEF89E}" TargetNetId="1.2.3.4.1.1">
+		<System>
+			<Tasks>
+				<Task Id="1" Priority="21" CycleTime="100000" AmsPort="351">
+					<Name>PlcTaskServer</Name>
+				</Task>
+			</Tasks>
+		</System>
+		<Plc>
+			<Project GUID="{8A4204E0-360D-4AF5-9263-B2E8F68B08FC}" Name="TcSocketHelper_SingleServerBinary" PrjFilePath="TcSocketHelper_SingleServerBinary\TcSocketHelper_SingleServerBinary.plcproj" TmcFilePath="TcSocketHelper_SingleServerBinary\TcSocketHelper_SingleServerBinary.tmc" ReloadTmc="true" AmsPort="851" FileArchiveSettings="#x0002">
+				<Instance Id="#x01010010" TcSmClass="TComPlcObjDef">
+					<Name>TcSocketHelper_SingleServerBinary Instance</Name>
+					<CLSID ClassFactory="TcPlc30">{08500001-0000-0000-F000-000000000064}</CLSID>
+				</Instance>
+			</Project>
+		</Plc>
+	</Project>
+</TcSmProject>

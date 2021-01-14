@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<TcSmProject xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://www.beckhoff.com/schemas/2012/07/TcSmProject" TcSmVersion="1.0">
+	<Project SccProjectName="SAK" SccAuxPath="SAK" SccLocalPath="SAK" SccProvider="SAK" ProjectGUID="{A7E7D342-EFCA-4ECD-92F3-22893BAA6E07}" ModifiedGUID="{6265BBD1-5532-448C-A6C8-74433F233CEE}" TargetNetId="5.19.99.105.1.1">
+		<System>
+			<Licenses>
+				<Target>
+					<ManualSelect>{3EBB9639-5FF3-42B6-8847-35C70DC013C8}</ManualSelect>
+				</Target>
+			</Licenses>
+			<Tasks>
+				<Task Id="1" Priority="20" CycleTime="100000" AmsPort="350">
+					<Name>PlcTaskServer</Name>
+				</Task>
+			</Tasks>
+		</System>
+		<Plc>
+			<Project GUID="{25F29119-B9CB-44EC-B02C-AA566DBF872A}" Name="TcpIp_SERVER" PrjFilePath="TcpIp_SERVER\TcpIp_SERVER.plcproj" TmcFilePath="TcpIp_SERVER\TcpIp_SERVER.tmc" ReloadTmc="true" AmsPort="851" FileArchiveSettings="#x0002">
+				<Instance Id="#x01010010" TcSmClass="TComPlcObjDef">
+					<Name>TcpIp_SERVER Instance</Name>
+					<CLSID ClassFactory="TcPlc30">{08500001-0000-0000-F000-000000000064}</CLSID>
+				</Instance>
+			</Project>
+		</Plc>
+	</Project>
+</TcSmProject>

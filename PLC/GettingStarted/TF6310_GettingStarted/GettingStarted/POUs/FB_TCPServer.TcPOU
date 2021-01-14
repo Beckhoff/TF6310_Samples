@@ -1,0 +1,216 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.5">
+  <POU Name="FB_TCPServer" Id="{eaed78c2-34d1-42b7-98f4-b58fa196fe7c}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION_BLOCK FB_TCPServer
+VAR_INPUT
+	sLocalHost: T_IPv4Addr;
+	nLocalPort: UDINT;
+	bStartCommunication : BOOL;
+END_VAR
+VAR_OUTPUT
+	bConnected: BOOL;
+	sSendData: STRING(255);
+	bBusy: BOOL;	
+	bError: BOOL;
+	nErrorID: UDINT;
+END_VAR
+VAR
+	iState: INT;
+	hListener: T_HSOCKET;
+	hSocket: T_HSOCKET;
+	fbSocketAccept: FB_SocketAccept;
+	fbSocketListen: FB_SocketListen;
+	fbSocketReceive: FB_SocketReceive;
+	fbSocketClose: FB_SocketClose;
+	fbSocketCloseAll: FB_SocketCloseAll;
+	fbSocketSend: FB_SocketSend;
+	bAcceptExecute: BOOL;
+	
+	bReceiveExecute: BOOL;
+	ReceiveCounter: UDINT;
+	
+	bSendTrigger: BOOL;
+	sReadData: STRING(255);
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[CASE iState OF
+0: // Init State
+	IF bStartCommunication = TRUE  THEN
+		fbSocketListen(bExecute := FALSE);
+		fbSocketAccept(bExecute := FALSE);
+		fbSocketCloseAll(bExecute := FALSE);
+		fbSocketClose(bExecute:= FALSE);
+		bBusy := TRUE;
+		iState := iState + 10;
+	ELSE
+		bBusy := FALSE;
+	END_IF
+	
+10:
+	fbSocketListen(															// Open Listener-Socket
+		sSrvNetId:= '', 
+		sLocalHost:= sLocalHost, 
+		nLocalPort:= nLocalPort, 
+		bExecute:= TRUE, 
+		tTimeout:= T#4S, 
+		bBusy=> , 
+		bError=> bError, 
+		nErrId=> nErrorID,
+		hListener=> hListener);
+		
+	IF hListener.handle <> 0 THEN
+		iState := iState + 10;	
+	ELSIF bError THEN
+		iState := 40;
+	END_IF
+	
+20: 		
+	fbSocketAccept(															// Accept Client connection
+		sSrvNetId:= '', 
+		hListener:= hListener, 
+		bExecute:= bAcceptExecute:= NOT bAcceptExecute, 
+		tTimeout:= T#4S, 
+		bAccepted=> , 
+		bBusy=> , 
+		bError=> bError, 
+		nErrId=> nErrorID,
+		hSocket=> hSocket);	
+
+	IF bError THEN
+		iState := 40; 
+	ELSIF hSocket.handle <> 0 THEN
+		iState := iState + 10; 
+		bConnected := TRUE;
+	END_IF
+	
+30: // Receive Data
+	fbSocketReceive(
+		sSrvNetId:= '', 
+		hSocket:= hSocket, 
+		cbLen:= SIZEOF(sReadData) , 
+		pDest:= ADR(sReadData), 
+		bExecute:= bReceiveExecute:= NOT bReceiveExecute, 					// Check for new client telegrams every second cycle
+		tTimeout:= T#4S, 
+		bBusy=> , 
+		bError=> bError, 
+		nErrId=> nErrorID,
+		nRecBytes=> );
+	
+	IF fbSocketReceive.nRecBytes <> 0 THEN									// Switch to send-state when data are received
+		fbSocketSend(bExecute:= FALSE);
+		ReceiveCounter := ReceiveCounter + 1; 
+		memcpy(ADR(sSendData), ADR(sReadData), fbSocketReceive.nRecBytes);	// Copy received data from ReceiveBuffer to SendBuffer
+		memset(ADR(sReadData), 0, SIZEOF(sReadData));						// Empty ReceiveBuffer
+		iState := iState + 5;
+	ELSIF fbSocketReceive.bError OR(NOT bStartCommunication) THEN			// Close connection when error is occuring or trigger is set
+		iState := iState + 10;
+	END_IF
+
+35: // Send Data
+	fbSocketSend(															// Send Data to client
+		sSrvNetId:= '', 
+		hSocket:= hSocket, 
+		cbLen:= SIZEOF(sSendData), 
+		pSrc:= ADR(sSendData),
+		bExecute:= TRUE, 
+		tTimeout:= T#3S, 
+		bBusy=> , 
+		bError=> bError, 
+		nErrId=> nErrorID);	
+	
+	
+	IF NOT fbSocketSend.bBusy THEN											// Switch back to receiving state after sending
+		iState := iState - 5;
+	ELSIF fbSocketSend.bError THEN
+		iState := iState + 5;												// Close connection in case of error 
+	END_IF
+	
+40:	// Error Handling	
+	fbSocketClose(															// Close Listener-Socket
+		sSrvNetId:= '', 
+		hSocket:= hListener, 
+		bExecute:= TRUE, 
+		tTimeout:= T#4S, 
+		bBusy=> , 
+		bError=> bError, 
+		nErrId=> nErrorID);		
+	IF (NOT fbSocketClose.bBusy) OR fbSocketClose.bError THEN
+		hListener.handle := 0;
+		iState := iState + 1;
+	END_IF
+41:	
+	fbSocketClose(bExecute := FALSE);
+	iState := iState + 1;
+42:
+	fbSocketClose(															// Close Connection Socket
+		sSrvNetId:= '', 
+		hSocket:= hSocket, 
+		bExecute:= TRUE, 
+		tTimeout:= T#4S, 
+		bBusy=> , 
+		bError=> bError, 
+		nErrId=> nErrorID);
+	IF NOT (fbSocketClose.bBusy) OR fbSocketClose.bError THEN
+		hSocket.handle := 0;	
+		iState := 0;
+		bConnected := FALSE;
+	END_IF
+END_CASE]]></ST>
+    </Implementation>
+    <LineIds Name="FB_TCPServer">
+      <LineId Id="10" Count="1" />
+      <LineId Id="20" Count="4" />
+      <LineId Id="164" Count="0" />
+      <LineId Id="25" Count="0" />
+      <LineId Id="232" Count="1" />
+      <LineId Id="26" Count="9" />
+      <LineId Id="133" Count="0" />
+      <LineId Id="37" Count="4" />
+      <LineId Id="234" Count="1" />
+      <LineId Id="42" Count="0" />
+      <LineId Id="167" Count="0" />
+      <LineId Id="43" Count="7" />
+      <LineId Id="132" Count="0" />
+      <LineId Id="52" Count="1" />
+      <LineId Id="186" Count="0" />
+      <LineId Id="242" Count="0" />
+      <LineId Id="241" Count="0" />
+      <LineId Id="56" Count="1" />
+      <LineId Id="278" Count="0" />
+      <LineId Id="58" Count="0" />
+      <LineId Id="175" Count="0" />
+      <LineId Id="60" Count="8" />
+      <LineId Id="131" Count="0" />
+      <LineId Id="70" Count="2" />
+      <LineId Id="74" Count="0" />
+      <LineId Id="76" Count="1" />
+      <LineId Id="315" Count="0" />
+      <LineId Id="314" Count="0" />
+      <LineId Id="78" Count="2" />
+      <LineId Id="276" Count="1" />
+      <LineId Id="81" Count="0" />
+      <LineId Id="84" Count="7" />
+      <LineId Id="130" Count="0" />
+      <LineId Id="93" Count="0" />
+      <LineId Id="312" Count="0" />
+      <LineId Id="94" Count="5" />
+      <LineId Id="177" Count="0" />
+      <LineId Id="100" Count="0" />
+      <LineId Id="191" Count="6" />
+      <LineId Id="189" Count="0" />
+      <LineId Id="257" Count="0" />
+      <LineId Id="261" Count="0" />
+      <LineId Id="265" Count="0" />
+      <LineId Id="259" Count="0" />
+      <LineId Id="190" Count="0" />
+      <LineId Id="263" Count="1" />
+      <LineId Id="244" Count="9" />
+      <LineId Id="260" Count="0" />
+      <LineId Id="268" Count="0" />
+      <LineId Id="280" Count="0" />
+      <LineId Id="9" Count="0" />
+      <LineId Id="256" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

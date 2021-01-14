@@ -1,0 +1,142 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.4">
+  <POU Name="FB_TCPClient" Id="{aee5fad7-6181-4fcb-97d6-7d2836584029}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION_BLOCK FB_TCPClient
+VAR_INPUT
+	sRemoteHost: T_IPv4Addr;
+	nRemotePort: UDINT;
+	sSendData: STRING(255);	
+	bStartCommunication: BOOL;
+	tCycleTimeSend: TIME;
+	bSendTrigger : BOOL;
+END_VAR
+VAR_OUTPUT
+	bConnected: BOOL;
+	sReceivedData: STRING(255);
+	nErrorID: UDINT;
+	bError: BOOL;
+	bBusy: BOOL;
+END_VAR
+VAR
+	iState: INT;
+	fbSocketConnect: FB_SocketConnect;
+	fbSocketSend: FB_SocketSend;
+	fbSocketClose: FB_SocketClose;
+	fbSocketReceive: FB_SocketReceive;
+	hSocket: T_HSOCKET;
+
+	fbTimer: TON;
+
+	bReceiveExecute: BOOL;
+	nRecBytes: UDINT;
+	bExecuteSocketSend: BOOL;
+	RTrig: R_TRIG;
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[CASE iState OF
+0:	// Init State
+	fbSocketConnect(bExecute := FALSE); 
+	fbSocketSend(bExecute := FALSE); 
+	fbSocketClose(bExecute := FALSE); 
+	bConnected := FALSE; 
+	IF bStartCommunication = TRUE THEN									// Start communication manually 
+		iState := iState + 10;
+	ELSE
+		bBusy := FALSE;
+	END_IF
+
+10:	// Connect Server
+	fbSocketConnect(
+		sSrvNetId:= '', 
+		sRemoteHost:= sRemoteHost, 
+		nRemotePort:= nRemotePort, 
+		bExecute:= TRUE, 
+		tTimeout:= T#4S, 
+		bBusy=> , 
+		bError=> bError, 
+		nErrId=> nErrorID, 
+		hSocket=> hSocket);
+	bBusy := TRUE;
+	fbTimer(IN:= NOT fbTimer.Q, PT:= T#3S, Q=> , ET=> );	
+	IF hSocket.handle <> 0 AND NOT (fbSocketConnect.bBusy) THEN			// Handle is created
+		bConnected := TRUE; 
+		iState :=iState + 5;
+	ELSIF NOT fbSocketConnect.bBusy OR fbTimer.Q THEN
+		iState := 0; 	
+	END_IF
+	
+15:																		// StartCommunication
+	IF (tCycleTimeSend <> T#0MS) THEN									// Send data cyclically
+		fbTimer(IN:= NOT fbTimer.Q, PT:= tCycleTimeSend, Q=> , ET=> );		
+	END_IF
+	RTrig(CLK:= bSendTrigger, Q=> );									// SendData on manuel trigger
+	
+	fbSocketSend(														// Send Data
+		sSrvNetId:= '', 
+		hSocket:= hSocket, 
+		cbLen:= SIZEOF(sSendData), 
+		pSrc:= ADR(sSendData), 
+		bExecute:= (fbTimer.Q OR RTrig.Q), 
+		tTimeout:= T#2S, 
+		bError=> bError, 
+		nErrId=> nErrorID, 
+		nErrId=> );
+
+	fbSocketReceive(													// ReceiveData
+		sSrvNetId:= , 
+		hSocket:= hSocket, 
+		cbLen:= SIZEOF(sReceivedData), 
+		pDest:=  ADR(sReceivedData), 
+		bExecute:= bReceiveExecute, 
+		tTimeout:= T#3S, 
+		bBusy=> , 
+		bError=> bError, 
+		nErrId=> nErrorID, 
+		nRecBytes=> nRecBytes);
+		
+	bReceiveExecute := NOT bReceiveExecute;								// Check for new data every second PLC cycle
+	IF NOT bStartCommunication OR bError THEN
+		iState := 20;
+	END_IF
+20: 
+	fbSocketClose(
+		sSrvNetId:= '', 
+		hSocket:= hSocket, 
+		bExecute:= TRUE, 
+		tTimeout:= T#4S, 
+		bBusy=> , 
+		bError=> bError, 
+		nErrId=> nErrorID );
+	IF NOT fbSocketClose.bBusy THEN
+		iState :=0;		
+	END_IF
+END_CASE]]></ST>
+    </Implementation>
+    <LineIds Name="FB_TCPClient">
+      <LineId Id="24" Count="4" />
+      <LineId Id="206" Count="0" />
+      <LineId Id="29" Count="1" />
+      <LineId Id="153" Count="1" />
+      <LineId Id="31" Count="12" />
+      <LineId Id="201" Count="0" />
+      <LineId Id="44" Count="2" />
+      <LineId Id="202" Count="0" />
+      <LineId Id="47" Count="6" />
+      <LineId Id="86" Count="0" />
+      <LineId Id="166" Count="0" />
+      <LineId Id="170" Count="0" />
+      <LineId Id="87" Count="6" />
+      <LineId Id="143" Count="0" />
+      <LineId Id="95" Count="1" />
+      <LineId Id="102" Count="8" />
+      <LineId Id="144" Count="0" />
+      <LineId Id="112" Count="3" />
+      <LineId Id="160" Count="2" />
+      <LineId Id="123" Count="5" />
+      <LineId Id="146" Count="1" />
+      <LineId Id="131" Count="3" />
+      <LineId Id="9" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

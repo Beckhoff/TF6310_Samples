@@ -1,0 +1,40 @@
+﻿<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.0.23">
+  <POU Name="F_ADSLOGHEXDATA" Id="{3a534e3d-56f5-4266-b3ab-8b399cfd4fb1}">
+    <Declaration><![CDATA[(* This function logs hexadecimal data to the TwinCAT XAE->Error list window *)
+FUNCTION F_ADSLOGHEXDATA : DINT
+VAR_INPUT
+	sPrefix		: STRING;(* Debug message prefix string (allows the identification of log message source) *)
+	pBuffer		: PVOID;(* Address of source buffer *)
+	cbBuffer	: UDINT;(* Byte size of source buffer *)
+END_VAR
+VAR
+	fbSplit	: FB_MemBufferSplit;
+	sArg	: T_MaxString;
+	sFormat : STRING;
+END_VAR]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[IF pBuffer = 0 OR cbBuffer = 0 THEN
+	RETURN;
+END_IF
+
+sFormat := CONCAT( sPrefix, '%s' );
+fbSplit.eCmd := eEnumCmd_First;
+
+REPEAT
+	fbSplit( pBuffer := pBuffer, cbBuffer := cbBuffer, cbSize := 32 );(* Split binary data to 32 byte segments *)
+	IF fbSplit.bOk THEN
+
+		sArg := DATA_TO_HEXSTR( pData := fbSplit.pSegment, cbData := fbSplit.cbSegment, FALSE );(* Convert binary data to hex string *)
+
+		F_ADSLOGHEXDATA := ADSLOGSTR( ADSLOG_MSGTYPE_HINT OR ADSLOG_MSGTYPE_LOG, sFormat, sArg );(* Log hex string *)
+
+		sFormat := '%s';
+		fbSplit.eCmd := eEnumCmd_Next;
+	END_IF
+UNTIL NOT fbSplit.bOk
+END_REPEAT
+]]></ST>
+    </Implementation>
+    <ObjectProperties />
+  </POU>
+</TcPlcObject>

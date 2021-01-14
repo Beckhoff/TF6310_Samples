@@ -1,0 +1,56 @@
+﻿<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.0.23">
+  <POU Name="MAIN" Id="{7b2ea52b-1e56-49d3-bb5d-551fcae6c279}">
+    <Declaration><![CDATA[PROGRAM MAIN
+VAR
+	sSrvNetID	: T_AmsNetID	:= '';(* TwinCAT TCP/IP server network address *)
+	sLocalHost	: T_IPv4Addr	:= '127.0.0.1';(* Own (server) IP address! *)
+	nLocalPort	: UDINT 		:= 200;(* Own (server) port number! *)
+	bEnable1	: BOOL 			:= TRUE;(* TRUE => enable server (connection) instance, FALSE => disable *)
+	bEnable2	: BOOL 			:= TRUE;
+	bEnable3	: BOOL 			:= TRUE;
+	bEnable4	: BOOL 			:= TRUE;
+	bEnable5	: BOOL 			:= TRUE;
+	bLog		: BOOL 			:= TRUE;(* TRUE => Enable error/message log, FALSE => Disable *)
+	
+	fbServer1	: FB_Server := ( sPrefix := 'SERVER1::' );(* Application (connection) instance *)
+	fbServer2	: FB_Server := ( sPrefix := 'SERVER2::' );
+	fbServer3	: FB_Server := ( sPrefix := 'SERVER3::' );
+	fbServer4	: FB_Server := ( sPrefix := 'SERVER4::' );
+	fbServer5	: FB_Server := ( sPrefix := 'SERVER5::' );
+	hServer		: T_HSERVER;(* Server connection handle *)
+
+	fbCloseAll	: FB_SocketCloseAll;
+	bInitialize	: BOOL := TRUE;
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[(* On PLC reset or program download close all old (opened) connections *)
+fbCloseAll( sSrvNetID := sSrvNetID, bExecute:= bInitialize );
+IF fbCloseAll.bBusy OR fbCloseAll.bError THEN
+	RETURN;
+END_IF
+
+IF bInitialize THEN
+	bInitialize := FALSE;
+
+	(* Initialize server handle *)
+	F_CreateServerHnd( 	sSrvNetID 	:= sSrvNetID,
+						sLocalHost 	:= sLocalHost,
+						nLocalPort	:= nLocalPort,
+						nMode 		:= SEL( bLog, 0, CONNECT_MODE_ENABLEDBG ),(* Enable/disable debug messages? *)
+						bEnable 	:= FALSE,(* TRUE = leave listener socket open, FALSE = close listener socket after last connection ist closed too *)
+						hServer 	:= hServer );
+END_IF
+
+
+(* Trigger the execution of every connection instance *)
+fbServer1( hServer := hServer, sSrvNetID := sSrvNetID, bEnable := bEnable1, bLog := bLog );
+fbServer2( hServer := hServer, sSrvNetID := sSrvNetID, bEnable := bEnable2, bLog := bLog );
+fbServer3( hServer := hServer, sSrvNetID := sSrvNetID, bEnable := bEnable3, bLog := bLog );
+fbServer4( hServer := hServer, sSrvNetID := sSrvNetID, bEnable := bEnable4, bLog := bLog );
+fbServer5( hServer := hServer, sSrvNetID := sSrvNetID, bEnable := bEnable5, bLog := bLog );
+]]></ST>
+    </Implementation>
+    <ObjectProperties />
+  </POU>
+</TcPlcObject>

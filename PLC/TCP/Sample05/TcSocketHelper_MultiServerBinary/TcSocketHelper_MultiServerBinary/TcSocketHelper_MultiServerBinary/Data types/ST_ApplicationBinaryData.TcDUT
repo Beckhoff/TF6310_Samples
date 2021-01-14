@@ -1,0 +1,21 @@
+﻿<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.0.23">
+  <DUT Name="ST_ApplicationBinaryData" Id="{01386178-596b-418d-a10f-e7c7cf0e5fb8}">
+    <Declaration><![CDATA[(* Simple binary user data (8 byte aligned) *)
+TYPE ST_ApplicationBinaryData :
+STRUCT
+	(* Adapt this structure to match your protocol needs *)
+	
+	dtTimeStamp : DT		:= DT#2008-12-01-00:00;(* 4 byte *)
+	nVelo		: UDINT		:= 0;(* 4 byte *)
+	fPos		: LREAL		:= 0.0;(* 8 byte *)
+	arr	 		: ARRAY[0..19] OF BYTE;(* 20 byte *)
+
+	sMsg		: STRING	:= 'None';(* 81 byte *)
+	reserved	: ARRAY[0..2] OF BYTE;(* Alignment data: 3 byte *)
+
+	(* Total user data size = 120 byte *)
+END_STRUCT
+END_TYPE]]></Declaration>
+    <ObjectProperties />
+  </DUT>
+</TcPlcObject>

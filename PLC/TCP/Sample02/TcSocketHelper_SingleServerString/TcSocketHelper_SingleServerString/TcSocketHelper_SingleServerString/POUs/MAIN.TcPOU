@@ -1,0 +1,42 @@
+﻿<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.0.23">
+  <POU Name="MAIN" Id="{1c288ed5-b500-4124-b452-d81672fe140a}">
+    <Declaration><![CDATA[PROGRAM MAIN
+VAR
+	sSrvNetID		: T_AmsNetID	:= '';(* TwinCAT TCP/IP server network address *)
+	sLocalHost		: T_IPv4Addr 	:= '127.0.0.1';(* Own (server) IP address! *)
+	nLocalPort		: UDINT 		:= 200;(* Own (server) port number! *)
+	bEnable			: BOOL 			:= TRUE;(* TRUE => Enable server data exchange, FALSE => Disable *)
+	bLog			: BOOL			:= TRUE;(* TRUE => Enable message/error log, FALSE => Disable *)
+
+	fbServer		: FB_Server := ( sPrefix := 'SERVER::' );(* Application (connection) instance *)
+	hServer			: T_HSERVER;(* Server connection handle *)
+
+	fbCloseAll		: FB_SocketCloseAll;
+	bInitialize		: BOOL := TRUE;
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[(* On PLC reset or program download close all old (opened) connections *)
+fbCloseAll( sSrvNetID := sSrvNetID, bExecute:= bInitialize );
+IF fbCloseAll.bBusy OR fbCloseAll.bError THEN
+	RETURN;
+END_IF
+
+IF bInitialize THEN
+	bInitialize := FALSE;
+
+	(* Initialize server handle once *)
+	F_CreateServerHnd( 	sSrvNetID := sSrvNetID, 
+						sLocalHost := sLocalHost, 
+						nLocalPort	:= nLocalPort,
+						nMode 		:= SEL( bLog, 0, CONNECT_MODE_ENABLEDBG),(* Enable/disable debug messages? *)
+						bEnable 	:= FALSE,(* TRUE = leave listener socket open, FALSE = close listener socket after last connection ist closed too *)
+						hServer 	:= hServer );
+END_IF
+
+fbServer( hServer := hServer, sSrvNetID := sSrvNetID, bEnable := bEnable, bLog := bLog );
+]]></ST>
+    </Implementation>
+    <ObjectProperties />
+  </POU>
+</TcPlcObject>

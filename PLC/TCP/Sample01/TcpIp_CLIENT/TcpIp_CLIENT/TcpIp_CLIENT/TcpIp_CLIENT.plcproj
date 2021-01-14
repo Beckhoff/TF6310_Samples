@@ -1,0 +1,106 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == ''">Debug</Configuration>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{52761ec0-3691-4dbb-b5cb-c5c883c976cd}</ProjectGuid>
+    <Name>TcpIp_CLIENT</Name>
+    <TypeSystem>{8802de9c-a4f7-43b6-9a9b-9ab12a9d99ed}</TypeSystem>
+    <Implicit_Task_Info>{3631fe55-bd53-47c3-b6f8-5f895260163f}</Implicit_Task_Info>
+    <Implicit_Jitter_Distribution>{4c72bfbe-72f1-4d55-bf08-0ac2cbdae49e}</Implicit_Jitter_Distribution>
+    <Implicit_KindOfTask>{6cb169e1-ddbe-4c04-8b0b-92839b1e9304}</Implicit_KindOfTask>
+    <Application>{9350581a-f76a-482e-89d7-75bb7d16fe07}</Application>
+    <ExternalTypes>
+      <Type Guid="{18071995-0000-0000-0000-000000000019}">HRESULT</Type>
+      <Type Guid="{18071995-0000-0000-0000-000000000025}">IID</Type>
+      <Type Guid="{00000030-0000-0000-e000-000000000064}">ITComObjectServer</Type>
+      <Type Guid="{02000002-0000-0000-e000-000000000064}">ITcTask</Type>
+      <Type Guid="{00000001-0000-0000-e000-000000000064}">ITcUnknown</Type>
+      <Type Guid="{d91e046a-a488-4d27-8d43-0f3c40ed5081}">PlcAppSystemInfo</Type>
+      <Type Guid="{6a76d020-03a2-465c-a678-c341951e9ef3}">PlcTaskSystemInfo</Type>
+    </ExternalTypes>
+    <FileVersion>1.0.0.0</FileVersion>
+    <LibraryReferences>{7adb892e-1a1e-4931-9c76-3ac3d4f17aa0}</LibraryReferences>
+    <CompilerDefines />
+    <dynamic_memory_size>65536</dynamic_memory_size>
+    <ProgramVersion>3.1.0.5</ProgramVersion>
+    <SccProjectName>SAK</SccProjectName>
+    <SccProvider>SAK</SccProvider>
+    <SccAuxPath>SAK</SccAuxPath>
+    <SccLocalPath>SAK</SccLocalPath>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)' == 'Debug' " />
+  <ItemGroup>
+    <Folder Include="Data types" />
+    <Folder Include="Global Variables" />
+    <Folder Include="POUs" />
+    <Folder Include="POUs\Helper POUs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Data types\E_ConnectionSteps.TcDUT">
+      <ObjectGuid>{ae46553d-d518-455f-bf7c-ba62e3c0307f}</ObjectGuid>
+    </Compile>
+    <Compile Include="Global Variables\Global_Variables.TcGVL">
+      <ObjectGuid>{ab28b2a6-df9e-493d-af41-de4236ee2d51}</ObjectGuid>
+    </Compile>
+    <Compile Include="POUs\FB_Client.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="POUs\FB_ClientApplication.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="POUs\FB_ClientConnection.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="POUs\Helper POUs\FB_FrameFifo.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="POUs\Helper POUs\FB_LogFifo.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="POUs\MAIN.TcPOU">
+      <ObjectGuid>{1ab60bce-2155-45d7-b4bb-787adb64acf0}</ObjectGuid>
+    </Compile>
+    <Compile Include="PlcTaskClient.TcTTO">
+      <ObjectGuid>{e1c58aff-3deb-4f37-9884-15306dec024e}</ObjectGuid>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="TcpIp_CLIENT.tmc">
+      <SubType>Content</SubType>
+    </Content>
+  </ItemGroup>
+  <ItemGroup>
+    <PlaceholderReference Include="Tc2_Standard">
+      <DefaultResolution>Tc2_Standard, * (Beckhoff Automation GmbH)</DefaultResolution>
+      <Namespace>Tc2_Standard</Namespace>
+    </PlaceholderReference>
+    <PlaceholderReference Include="Tc2_System">
+      <DefaultResolution>Tc2_System, * (Beckhoff Automation GmbH)</DefaultResolution>
+      <Namespace>Tc2_System</Namespace>
+    </PlaceholderReference>
+    <PlaceholderReference Include="Tc2_TcpIp">
+      <DefaultResolution>Tc2_TcpIp, * (Beckhoff Automation GmbH)</DefaultResolution>
+      <Namespace>Tc2_TcpIp</Namespace>
+    </PlaceholderReference>
+    <PlaceholderReference Include="Tc2_Utilities">
+      <DefaultResolution>Tc2_Utilities, * (Beckhoff Automation GmbH)</DefaultResolution>
+      <Namespace>Tc2_Utilities</Namespace>
+    </PlaceholderReference>
+    <PlaceholderReference Include="Tc3_Interfaces">
+      <DefaultResolution>Tc3_Interfaces, * (Beckhoff Automation GmbH)</DefaultResolution>
+      <Namespace>Tc3_Interfaces</Namespace>
+    </PlaceholderReference>
+    <PlaceholderReference Include="Tc3_Module">
+      <DefaultResolution>Tc3_Module, * (Beckhoff Automation GmbH)</DefaultResolution>
+      <Namespace>Tc3_Module</Namespace>
+    </PlaceholderReference>
+  </ItemGroup>
+  <ProjectExtensions>
+    <PlcProjectOptions>﻿<XmlArchive><Data><o xml:space="preserve" t="OptionKey">
+      <v n="Name">"&lt;ProjectRoot&gt;"</v>
+      <d n="SubKeys" t="Hashtable" />
+      <d n="Values" t="Hashtable" />
+    </o></Data><TypeList><Type n="Hashtable">System.Collections.Hashtable</Type><Type n="OptionKey">{54dd0eac-a6d8-46f2-8c27-2f43c7e49861}</Type><Type n="String">System.String</Type></TypeList></XmlArchive></PlcProjectOptions>
+  </ProjectExtensions>
+</Project>

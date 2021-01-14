@@ -1,0 +1,142 @@
+﻿<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.0.23">
+  <POU Name="MAIN" Id="{1d645a75-c2a7-4c5a-b258-ece19c32d75a}">
+    <Declaration><![CDATA[PROGRAM MAIN
+VAR
+	bEnable 				: BOOL 	:= TRUE;
+	nLocalPort				: UDINT := 1236;
+	sLocalHost				: T_IPv4Addr := '127.0.0.1';(* Adapt local IP address to your device *)
+	nRemotePort				: UDINT := 1237;
+	sMulticastAddr			: T_IPv4Addr := '224.1.1.255';
+	
+	fbUdpCreate 			: FB_SocketUdpCreate;
+	fbSocketAddMulticast 	: FB_SocketUdpAddMulticastAddress;
+	fbSocketDropMulticast 	: FB_SocketUdpDropMulticastAddress;
+	fbSocketSend  			: FB_SocketUdpSendTo;
+	fbSocketReceive 		: FB_SocketUdpReceiveFrom;
+	fbSocketClose			: FB_SocketClose;
+	fbCloseAll				: FB_SocketCloseAll;
+	bInitialize				: BOOL := TRUE;
+	bUdpCreated				: BOOL;
+	bMulticastAdded			: BOOL; 
+	
+	nCounterIn 				: UDINT;
+	nCounterOut 			: UDINT;
+	nState 					: INT;
+END_VAR]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[(* On PLC reset or program download close all opened/created sockets *)
+fbCloseAll( bExecute:= bInitialize );
+IF fbCloseAll.bBusy OR fbCloseAll.bError THEN
+	RETURN;
+END_IF
+bInitialize := FALSE;
+
+
+CASE nState OF
+0:
+	IF bEnable THEN
+		bUdpCreated := FALSE;
+		bMulticastAdded := FALSE;
+		nState := 1;
+	END_IF
+1:
+	fbUdpCreate( bExecute := FALSE );
+	fbUdpCreate( nLocalPort := nLocalPort, sLocalHost := sLocalHost, bExecute := TRUE );
+	nState := 2;
+2:
+	fbUdpCreate( bExecute:=FALSE );
+	IF NOT fbUdpCreate.bBusy THEN
+		IF NOT fbUdpCreate.bError THEN
+			bUdpCreated := TRUE;
+			fbSocketAddMulticast( bExecute := FALSE );
+			fbSocketAddMulticast( hSocket := fbUdpCreate.hSocket, sMulticastAddr := sMulticastAddr, bExecute := TRUE );
+			nState := 3;
+		ELSE
+			nState := 100;
+		END_IF
+	END_IF
+3:
+	fbSocketAddMulticast( bExecute := FALSE );
+	IF NOT fbSocketAddMulticast.bBusy THEN
+		IF NOT fbSocketAddMulticast.bError THEN
+			bMulticastAdded := TRUE;
+			nState := 4;
+		ELSE
+			nState := 100;
+		END_IF
+	END_IF
+	
+4:
+	IF bEnable THEN
+		nCounterOut := nCounterOut + 1;
+		fbSocketSend( bExecute := FALSE );
+		fbSocketSend( nRemotePort := nRemotePort, sRemoteHost := sMulticastAddr, hSocket := fbUdpCreate.hSocket, cbLen := SIZEOF(nCounterOut), pSrc := ADR(nCounterOut), bExecute := TRUE );
+		nState := 5;
+	ELSE
+		nState := 10;
+	END_IF
+5:
+	fbSocketSend( bExecute := FALSE );
+	IF NOT fbSocketSend.bBusy THEN
+		IF NOT fbSocketSend.bError THEN
+			fbSocketReceive( bExecute := FALSE );
+			fbSocketReceive( hSocket := fbUdpCreate.hSocket, cbLen := SIZEOF(nCounterIn), pDest := ADR(nCounterIn), bExecute := TRUE );
+			nState := 6;
+		ELSE
+ 			nState := 100;
+		END_IF
+	END_IF
+6:	
+	fbSocketReceive( bExecute := FALSE );
+	IF NOT fbSocketReceive.bBusy THEN
+		IF NOT fbSocketReceive.bError THEN
+			nState := 4;
+		ELSE
+			nState := 100;
+		END_IF
+	END_IF
+
+10:
+	fbSocketDropMulticast( bExecute := FALSE );
+	fbSocketDropMulticast( hSocket := fbUdpCreate.hSocket, sMulticastAddr := sMulticastAddr, bExecute := TRUE );
+	nState := 11;
+11:
+	fbSocketDropMulticast( bExecute := FALSE );
+	IF NOT fbSocketDropMulticast.bBusy THEN
+		bMulticastAdded := FALSE;
+		IF NOT fbSocketDropMulticast.bError THEN
+			nState := 20;
+		ELSE
+			nState := 100;
+		END_IF
+	END_IF
+
+20:	
+	fbSocketClose( bExecute := FALSE );
+	fbSocketClose( hSocket := fbUdpCreate.hSocket, bExecute := TRUE );
+	nState := 21;
+21:	
+	fbSocketClose( bExecute := FALSE );
+	IF NOT fbSocketClose.bBusy THEN
+		bUdpCreated := FALSE;
+		IF NOT fbSocketClose.bError THEN
+			nState := 0;	
+		ELSE
+			nState := 100;	
+		END_IF
+	END_IF
+	
+100:
+	IF bMulticastAdded THEN
+		nState := 10;
+	ELSIF bUdpCreated THEN
+		nState := 20;
+	ELSE
+		nState := 0;
+	END_IF
+
+END_CASE]]></ST>
+    </Implementation>
+    <ObjectProperties />
+  </POU>
+</TcPlcObject>

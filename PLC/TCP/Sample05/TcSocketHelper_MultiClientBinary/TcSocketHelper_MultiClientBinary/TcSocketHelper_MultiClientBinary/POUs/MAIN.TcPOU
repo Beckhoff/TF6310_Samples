@@ -1,0 +1,44 @@
+﻿<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.0.23">
+  <POU Name="MAIN" Id="{4c502644-9835-4c1d-a89e-43c96323ce60}">
+    <Declaration><![CDATA[PROGRAM MAIN
+VAR
+	sSrvNetID			: T_AmsNetID	:= '';(* TwinCAT TCP/IP server network address *)
+	bEnable1			: BOOL 			:= TRUE;(* TRUE => Enable client 1 data exchange, FALSE => Disable *)
+	bEnable2			: BOOL 			:= FALSE;(* TRUE => Enable client 2 data exchange, FALSE => Disable *)
+	bEnable3			: BOOL 			:= FALSE;(* TRUE => Enable client 3 data exchange, FALSE => Disable *)
+	bEnable4			: BOOL 			:= FALSE;(* TRUE => Enable client 4 data exchange, FALSE => Disable *)
+	bEnable5			: BOOL 			:= FALSE;(* TRUE => Enable client 5 data exchange, FALSE => Disable *)
+	bLog				: BOOL			:= TRUE;(* TRUE => Enable log message output, FALSE => Disable *)
+
+	fbClient1	: FB_Client := ( sRemoteHost:= '127.0.0.1',(* Server IP network address *) 
+								nRemotePort:= 200,(* Server port number *)
+								sPrefix := 'CLIENT1::' );(* Client (connection) instance *)
+	fbClient2	: FB_Client := ( sRemoteHost:= '127.0.0.1', nRemotePort:= 200, sPrefix := 'CLIENT2::' );(* Client (connection) instance *)
+	fbClient3	: FB_Client := ( sRemoteHost:= '127.0.0.1', nRemotePort:= 200, sPrefix := 'CLIENT3::' );(* Client (connection) instance *)
+	fbClient4	: FB_Client := ( sRemoteHost:= '127.0.0.1', nRemotePort:= 200, sPrefix := 'CLIENT4::' );(* Client (connection) instance *)
+	fbClient5	: FB_Client := ( sRemoteHost:= '127.0.0.1', nRemotePort:= 200, sPrefix := 'CLIENT5::' );(* Client (connection) instance *)
+
+	fbCloseAll	: FB_SocketCloseAll;
+	bInitialize	: BOOL := TRUE;
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[(* On PLC reset or program download close all old (opened) connections *)
+fbCloseAll( sSrvNetID := sSrvNetID, bExecute:= bInitialize );
+IF fbCloseAll.bBusy OR fbCloseAll.bError THEN
+	RETURN;
+END_IF
+bInitialize := FALSE;
+
+fbClient1( sSrvNetID := sSrvNetID, bEnable := bEnable1, bLog := bLog );
+fbClient2( sSrvNetID := sSrvNetID, bEnable := bEnable2, bLog := bLog );
+fbClient3( sSrvNetID := sSrvNetID, bEnable := bEnable3, bLog := bLog );
+fbClient4( sSrvNetID := sSrvNetID, bEnable := bEnable4, bLog := bLog );
+fbClient5( sSrvNetID := sSrvNetID, bEnable := bEnable5, bLog := bLog );
+
+
+]]></ST>
+    </Implementation>
+    <ObjectProperties />
+  </POU>
+</TcPlcObject>

@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<TcSmProject xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://www.beckhoff.com/schemas/2012/07/TcSmProject" TcSmVersion="1.0">
+	<Project SccProjectName="SAK" SccAuxPath="SAK" SccLocalPath="SAK" SccProvider="SAK" ProjectGUID="{C3C6118D-9EBA-4A69-8DC2-066B7E8EFE84}" ModifiedGUID="{7DA8F970-C673-4F00-8853-EB127829ABE4}" Target64Bit="true">
+		<System>
+			<Tasks>
+				<Task Id="1" Priority="21" CycleTime="100000" AmsPort="351">
+					<Name>StandardB</Name>
+				</Task>
+			</Tasks>
+		</System>
+		<Plc>
+			<Project GUID="{E7D89A59-7CF6-4F32-883A-ED8000BDB08B}" Name="PeerToPeerB" PrjFilePath="PeerToPeerB\PeerToPeerB.plcproj" TmcFilePath="PeerToPeerB\PeerToPeerB.tmc" ReloadTmc="true" AmsPort="851" FileArchiveSettings="#x0002">
+				<Instance Id="#x01010010" TcSmClass="TComPlcObjDef">
+					<Name>PeerToPeerB Instance</Name>
+					<CLSID ClassFactory="TcPlc30">{08500001-0000-0000-F000-000000000064}</CLSID>
+				</Instance>
+			</Project>
+		</Plc>
+	</Project>
+</TcSmProject>

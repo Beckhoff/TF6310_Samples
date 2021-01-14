@@ -1,0 +1,58 @@
+﻿<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.0.23">
+  <POU Name="MAIN" Id="{e68c1c03-7bea-46fa-944f-e762333068af}">
+    <Declaration><![CDATA[PROGRAM MAIN
+VAR
+	sSrvNetID		: T_AmsNetID	:= '';(* TwinCAT TCP/IP server network address *)
+	sLocalHost		: T_Ipv4Addr 	:= '127.0.0.1';(* Server IP network address *)
+	nLocalPort		: UDINT 		:= 200;(* Server port number *)
+	bEnable1		: BOOL 			:= TRUE;(* TRUE => Enable server connection 1 data exchange, FALSE => Disable *)
+	bEnable2		: BOOL 			:= TRUE;(* TRUE => Enable server connection 2 data exchange, FALSE => Disable *)
+	bEnable3		: BOOL 			:= TRUE;(* TRUE => Enable server connection 3 data exchange, FALSE => Disable *)
+	bEnable4		: BOOL 			:= TRUE;(* TRUE => Enable server connection 4 data exchange, FALSE => Disable *)
+	bEnable5		: BOOL 			:= TRUE;(* TRUE => Enable server connection 5 data exchange, FALSE => Disable *)
+	bLog			: BOOL			:= TRUE;(* TRUE => Enable log message output, FALSE => Disable *)
+
+	fbServer1	: FB_Server := ( sPrefix := 'SERVER1::' );(* Server (connection) instance *)
+	fbServer2	: FB_Server := ( sPrefix := 'SERVER2::' );(* Server (connection) instance *)
+	fbServer3	: FB_Server := ( sPrefix := 'SERVER3::' );(* Server (connection) instance *)
+	fbServer4	: FB_Server := ( sPrefix := 'SERVER4::' );(* Server (connection) instance *)
+	fbServer5	: FB_Server := ( sPrefix := 'SERVER5::' );(* Server (connection) instance *)
+	hServer		: T_HSERVER;(* Server connection handle *)
+	
+	
+	fbCloseAll	: FB_SocketCloseAll;
+	bInitialize	: BOOL := TRUE;
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[(* On PLC reset or program download close all old (opened) connections *)
+fbCloseAll( sSrvNetID := sSrvNetID, bExecute:= bInitialize );
+IF fbCloseAll.bBusy OR fbCloseAll.bError THEN
+	RETURN;
+END_IF
+
+IF bInitialize THEN
+	bInitialize := FALSE;
+
+	(* Initialize server handle *)
+	F_CreateServerHnd( 	sSrvNetID 	:= sSrvNetID,
+						sLocalHost 	:= sLocalHost,
+						nLocalPort	:= nLocalPort,
+						nMode 		:= SEL( bLog, 0, CONNECT_MODE_ENABLEDBG ),(* Enable debug messages *)
+						bEnable 	:= FALSE,(* TRUE = leave listener socket open, FALSE = close listener socket after last connection ist closed too *)
+						hServer 	:= hServer );
+END_IF
+
+
+(* Trigger the execution of every server (connection) instance *)
+fbServer1( hServer := hServer, sSrvNetID := sSrvNetID, bEnable := bEnable1, bLog := bLog );
+fbServer2( hServer := hServer, sSrvNetID := sSrvNetID, bEnable := bEnable2, bLog := bLog );
+fbServer3( hServer := hServer, sSrvNetID := sSrvNetID, bEnable := bEnable3, bLog := bLog );
+fbServer4( hServer := hServer, sSrvNetID := sSrvNetID, bEnable := bEnable4, bLog := bLog );
+fbServer5( hServer := hServer, sSrvNetID := sSrvNetID, bEnable := bEnable5, bLog := bLog );
+
+]]></ST>
+    </Implementation>
+    <ObjectProperties />
+  </POU>
+</TcPlcObject>

@@ -1,0 +1,56 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 11.00
+# Visual Studio 2010
+Project("{B1E792BE-AA5F-4E3C-8C82-674BF9C0715B}") = "TcSocketHelper_SingleClientBinary", "TcSocketHelper_SingleClientBinary\TcSocketHelper_SingleClientBinary.tsproj", "{EB2B7363-BA27-4DF0-A1BF-6D68626C2DC6}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{1FBB4EA9-D8AA-47BD-9BE7-7A56F0E3F54B}"
+	ProjectSection(SolutionItems) = preProject
+		TcSocketHelper_SingleClientBinary\TcSocketHelper_SingleClientBinary.tpzip = TcSocketHelper_SingleClientBinary\TcSocketHelper_SingleClientBinary.tpzip
+	EndProjectSection
+EndProject
+Global
+	GlobalSection(TeamFoundationVersionControl) = preSolution
+		SccNumberOfProjects = 3
+		SccEnterpriseProvider = {4CA58AB2-18FA-4F8D-95D4-32DDF27D184C}
+		SccTeamFoundationServer = http://nt-teamfd01:8080/
+		SccLocalPath0 = .
+		SccProjectUniqueName1 = TcSocketHelper_SingleClientBinary\\TcSocketHelper_SingleClientBinary.tsproj
+		SccProjectName1 = TcSocketHelper_SingleClientBinary
+		SccLocalPath1 = TcSocketHelper_SingleClientBinary
+		SccProjectUniqueName2 = TcSocketHelper_SingleClientBinary\\TcSocketHelper_SingleClientBinary\\TcSocketHelper_SingleClientBinary.plcproj
+		SccProjectTopLevelParentUniqueName2 = TcSocketHelper_SingleClientBinary\\TcSocketHelper_SingleClientBinary.tsproj
+		SccProjectName2 = TcSocketHelper_SingleClientBinary/TcSocketHelper_SingleClientBinary
+		SccLocalPath2 = TcSocketHelper_SingleClientBinary\\TcSocketHelper_SingleClientBinary
+	EndGlobalSection
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|TwinCAT CE7 (ARMV7) = Debug|TwinCAT CE7 (ARMV7)
+		Debug|TwinCAT RT (x64) = Debug|TwinCAT RT (x64)
+		Debug|TwinCAT RT (x86) = Debug|TwinCAT RT (x86)
+		Release|TwinCAT CE7 (ARMV7) = Release|TwinCAT CE7 (ARMV7)
+		Release|TwinCAT RT (x64) = Release|TwinCAT RT (x64)
+		Release|TwinCAT RT (x86) = Release|TwinCAT RT (x86)
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{EB2B7363-BA27-4DF0-A1BF-6D68626C2DC6}.Debug|TwinCAT CE7 (ARMV7).ActiveCfg = Debug|TwinCAT CE7 (ARMV7)
+		{EB2B7363-BA27-4DF0-A1BF-6D68626C2DC6}.Debug|TwinCAT RT (x64).ActiveCfg = Debug|TwinCAT RT (x64)
+		{EB2B7363-BA27-4DF0-A1BF-6D68626C2DC6}.Debug|TwinCAT RT (x86).ActiveCfg = Debug|TwinCAT RT (x86)
+		{EB2B7363-BA27-4DF0-A1BF-6D68626C2DC6}.Release|TwinCAT CE7 (ARMV7).ActiveCfg = Release|TwinCAT CE7 (ARMV7)
+		{EB2B7363-BA27-4DF0-A1BF-6D68626C2DC6}.Release|TwinCAT RT (x64).ActiveCfg = Release|TwinCAT RT (x64)
+		{EB2B7363-BA27-4DF0-A1BF-6D68626C2DC6}.Release|TwinCAT RT (x86).ActiveCfg = Release|TwinCAT RT (x86)
+		{97152232-4FF9-4B98-9749-B0979F2ED43C}.Debug|TwinCAT CE7 (ARMV7).ActiveCfg = Debug|TwinCAT CE7 (ARMV7)
+		{97152232-4FF9-4B98-9749-B0979F2ED43C}.Debug|TwinCAT CE7 (ARMV7).Build.0 = Debug|TwinCAT CE7 (ARMV7)
+		{97152232-4FF9-4B98-9749-B0979F2ED43C}.Debug|TwinCAT RT (x64).ActiveCfg = Debug|TwinCAT RT (x64)
+		{97152232-4FF9-4B98-9749-B0979F2ED43C}.Debug|TwinCAT RT (x64).Build.0 = Debug|TwinCAT RT (x64)
+		{97152232-4FF9-4B98-9749-B0979F2ED43C}.Debug|TwinCAT RT (x86).ActiveCfg = Debug|TwinCAT RT (x86)
+		{97152232-4FF9-4B98-9749-B0979F2ED43C}.Debug|TwinCAT RT (x86).Build.0 = Debug|TwinCAT RT (x86)
+		{97152232-4FF9-4B98-9749-B0979F2ED43C}.Release|TwinCAT CE7 (ARMV7).ActiveCfg = Release|TwinCAT CE7 (ARMV7)
+		{97152232-4FF9-4B98-9749-B0979F2ED43C}.Release|TwinCAT CE7 (ARMV7).Build.0 = Release|TwinCAT CE7 (ARMV7)
+		{97152232-4FF9-4B98-9749-B0979F2ED43C}.Release|TwinCAT RT (x64).ActiveCfg = Release|TwinCAT RT (x64)
+		{97152232-4FF9-4B98-9749-B0979F2ED43C}.Release|TwinCAT RT (x64).Build.0 = Release|TwinCAT RT (x64)
+		{97152232-4FF9-4B98-9749-B0979F2ED43C}.Release|TwinCAT RT (x86).ActiveCfg = Release|TwinCAT RT (x86)
+		{97152232-4FF9-4B98-9749-B0979F2ED43C}.Release|TwinCAT RT (x86).Build.0 = Release|TwinCAT RT (x86)
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal

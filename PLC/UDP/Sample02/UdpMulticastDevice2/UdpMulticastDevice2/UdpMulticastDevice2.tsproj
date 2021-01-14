@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<TcSmProject xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://www.beckhoff.com/schemas/2012/07/TcSmProject" TcSmVersion="1.0">
+	<Project SccProjectName="SAK" SccAuxPath="SAK" SccLocalPath="SAK" SccProvider="SAK" ProjectGUID="{3F84F674-220B-48E5-9BA8-188A80C3D3B1}" ModifiedGUID="{5D0F16BB-D281-4873-8158-6209BF35D7D4}" Target64Bit="true">
+		<System>
+			<Tasks>
+				<Task Id="2" Priority="21" CycleTime="100000" AmsPort="351">
+					<Name>PlcTask2</Name>
+				</Task>
+			</Tasks>
+		</System>
+		<Plc>
+			<Project GUID="{B2680EB1-BF85-4361-A909-619CAF2119FD}" Name="UdpMulticastDevice2" PrjFilePath="UdpMulticastDevice2\UdpMulticastDevice2.plcproj" TmcFilePath="UdpMulticastDevice2\UdpMulticastDevice2.tmc" ReloadTmc="true" AmsPort="851" FileArchiveSettings="#x0002">
+				<Instance Id="#x01010010" TcSmClass="TComPlcObjDef">
+					<Name>UdpMulticastDevice2 Instance</Name>
+					<CLSID ClassFactory="TcPlc30">{08500001-0000-0000-F000-000000000064}</CLSID>
+				</Instance>
+			</Project>
+		</Plc>
+	</Project>
+</TcSmProject>
