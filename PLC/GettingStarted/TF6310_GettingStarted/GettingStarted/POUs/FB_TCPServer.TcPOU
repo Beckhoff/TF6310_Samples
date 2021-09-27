@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.5">
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.6">
   <POU Name="FB_TCPServer" Id="{eaed78c2-34d1-42b7-98f4-b58fa196fe7c}" SpecialFunc="None">
     <Declaration><![CDATA[FUNCTION_BLOCK FB_TCPServer
 VAR_INPUT
@@ -26,11 +26,10 @@ VAR
 	fbSocketSend: FB_SocketSend;
 	bAcceptExecute: BOOL;
 	
-	bReceiveExecute: BOOL;
 	ReceiveCounter: UDINT;
+	sReadData: STRING(255);
 	
 	bSendTrigger: BOOL;
-	sReadData: STRING(255);
 END_VAR
 ]]></Declaration>
     <Implementation>
@@ -48,16 +47,16 @@ END_VAR
 	END_IF
 	
 10:
-	fbSocketListen(															// Open Listener-Socket
-		sSrvNetId:= '', 
-		sLocalHost:= sLocalHost, 
-		nLocalPort:= nLocalPort, 
+	fbSocketListen(																// Open Listener-Socket
+		sSrvNetId:= '', 														// Local NetID
+		sLocalHost:= sLocalHost, 												// Local IP
+		nLocalPort:= nLocalPort, 												// Local Port
 		bExecute:= TRUE, 
 		tTimeout:= T#4S, 
 		bBusy=> , 
 		bError=> bError, 
 		nErrId=> nErrorID,
-		hListener=> hListener);
+		hListener=> hListener);													// Handle of Listener Socket
 		
 	IF hListener.handle <> 0 THEN
 		iState := iState + 10;	
@@ -66,16 +65,19 @@ END_VAR
 	END_IF
 	
 20: 		
-	fbSocketAccept(															// Accept Client connection
-		sSrvNetId:= '', 
-		hListener:= hListener, 
-		bExecute:= bAcceptExecute:= NOT bAcceptExecute, 
+	fbSocketAccept(																// Accept Client connection
+		sSrvNetId:= '', 		
+		hListener:= hListener, 													// Handle of Listener Socket
+		bExecute:= TRUE, 
 		tTimeout:= T#4S, 
 		bAccepted=> , 
 		bBusy=> , 
 		bError=> bError, 
 		nErrId=> nErrorID,
-		hSocket=> hSocket);	
+		hSocket=> hSocket);														// Connection Handle
+	IF NOT fbSocketAccept.bBusy THEN
+		fbSocketAccept(bExecute:= FALSE);
+	END_IF
 
 	IF bError THEN
 		iState := 40; 
@@ -85,30 +87,34 @@ END_VAR
 	END_IF
 	
 30: // Receive Data
-	fbSocketReceive(
+	fbSocketReceive(															// Check cyclically for new client telegrams 
 		sSrvNetId:= '', 
 		hSocket:= hSocket, 
 		cbLen:= SIZEOF(sReadData) , 
 		pDest:= ADR(sReadData), 
-		bExecute:= bReceiveExecute:= NOT bReceiveExecute, 					// Check for new client telegrams every second cycle
+		bExecute:= TRUE, 														
 		tTimeout:= T#4S, 
 		bBusy=> , 
 		bError=> bError, 
 		nErrId=> nErrorID,
 		nRecBytes=> );
-	
-	IF fbSocketReceive.nRecBytes <> 0 THEN									// Switch to send-state when data are received
-		fbSocketSend(bExecute:= FALSE);
-		ReceiveCounter := ReceiveCounter + 1; 
-		memcpy(ADR(sSendData), ADR(sReadData), fbSocketReceive.nRecBytes);	// Copy received data from ReceiveBuffer to SendBuffer
-		memset(ADR(sReadData), 0, SIZEOF(sReadData));						// Empty ReceiveBuffer
-		iState := iState + 5;
-	ELSIF fbSocketReceive.bError OR(NOT bStartCommunication) THEN			// Close connection when error is occuring or trigger is set
+		
+	IF NOT fbSocketReceive.bBusy THEN
+		fbSocketReceive(bExecute := FALSE);
+		IF fbSocketReceive.nRecBytes <> 0 THEN									// Switch to send-state when data are received
+			fbSocketSend(bExecute:= FALSE);
+			ReceiveCounter := ReceiveCounter + 1; 
+			memcpy(ADR(sSendData), ADR(sReadData), fbSocketReceive.nRecBytes);	// Copy received data from ReceiveBuffer to SendBuffer
+			memset(ADR(sReadData), 0, SIZEOF(sReadData));						// Empty ReceiveBuffer
+			iState := iState + 5;
+		END_IF
+	END_IF
+	IF fbSocketReceive.bError OR(NOT bStartCommunication) THEN					// Close connection when error is occuring or trigger is set
 		iState := iState + 10;
 	END_IF
 
 35: // Send Data
-	fbSocketSend(															// Send Data to client
+	fbSocketSend(																// Send Data to client
 		sSrvNetId:= '', 
 		hSocket:= hSocket, 
 		cbLen:= SIZEOF(sSendData), 
@@ -120,14 +126,14 @@ END_VAR
 		nErrId=> nErrorID);	
 	
 	
-	IF NOT fbSocketSend.bBusy THEN											// Switch back to receiving state after sending
+	IF NOT fbSocketSend.bBusy THEN												// Switch back to receiving state after sending
 		iState := iState - 5;
 	ELSIF fbSocketSend.bError THEN
-		iState := iState + 5;												// Close connection in case of error 
+		iState := iState + 5;													// Close connection in case of error 
 	END_IF
 	
 40:	// Error Handling	
-	fbSocketClose(															// Close Listener-Socket
+	fbSocketClose(																// Close Listener-Socket
 		sSrvNetId:= '', 
 		hSocket:= hListener, 
 		bExecute:= TRUE, 
@@ -143,7 +149,7 @@ END_VAR
 	fbSocketClose(bExecute := FALSE);
 	iState := iState + 1;
 42:
-	fbSocketClose(															// Close Connection Socket
+	fbSocketClose(																// Close Connection Socket
 		sSrvNetId:= '', 
 		hSocket:= hSocket, 
 		bExecute:= TRUE, 
@@ -173,6 +179,7 @@ END_CASE]]></ST>
       <LineId Id="43" Count="7" />
       <LineId Id="132" Count="0" />
       <LineId Id="52" Count="1" />
+      <LineId Id="360" Count="2" />
       <LineId Id="186" Count="0" />
       <LineId Id="242" Count="0" />
       <LineId Id="241" Count="0" />
@@ -182,12 +189,14 @@ END_CASE]]></ST>
       <LineId Id="175" Count="0" />
       <LineId Id="60" Count="8" />
       <LineId Id="131" Count="0" />
-      <LineId Id="70" Count="2" />
-      <LineId Id="74" Count="0" />
-      <LineId Id="76" Count="1" />
-      <LineId Id="315" Count="0" />
-      <LineId Id="314" Count="0" />
-      <LineId Id="78" Count="2" />
+      <LineId Id="70" Count="1" />
+      <LineId Id="347" Count="0" />
+      <LineId Id="72" Count="0" />
+      <LineId Id="348" Count="0" />
+      <LineId Id="352" Count="5" />
+      <LineId Id="351" Count="0" />
+      <LineId Id="349" Count="0" />
+      <LineId Id="79" Count="1" />
       <LineId Id="276" Count="1" />
       <LineId Id="81" Count="0" />
       <LineId Id="84" Count="7" />
