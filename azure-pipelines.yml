@@ -1,0 +1,25 @@
+# Starter pipeline
+# Start with a minimal pipeline that you can customize to build and deploy your code.
+# Add steps that build, run tests, deploy, and more:
+# https://aka.ms/yaml
+
+trigger:
+- master
+
+pool: 
+  name: TwinCAT-Builds
+
+steps:
+- task: CopyFiles@1
+  displayName: 'Copying files to ArtifactStagingDirectory'
+  inputs:
+    sourceFolder: '$(Build.SourcesDirectory)'
+    contents: '**/*'
+    targetFolder: '$(Build.ArtifactStagingDirectory)'
+- task: PublishBuildArtifacts@1
+  condition: not(eq(variables['Build.Reason'], 'PullRequest'))
+  displayName: 'Publish build artifacts to pipeline'
+  inputs:
+    pathToPublish: '$(Build.ArtifactStagingDirectory)'
+    artifactName: TcTcpIpSamples
+    publishLocation: 'Container'
