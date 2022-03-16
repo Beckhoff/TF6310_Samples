@@ -1,0 +1,34 @@
+﻿<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.0.23">
+  <POU Name="FB_Client" Id="{c11f7280-27ca-4f3d-865b-a554dd255326}">
+    <Declaration><![CDATA[FUNCTION_BLOCK FB_Client
+VAR_INPUT
+	sSrvNetID	: T_AmsNetID	:= '';(* TwinCAT TCP/IP server network address *)
+	sRemoteHost	: T_IPv4Addr 	:= '127.0.0.1';(* Server network address *)
+	nRemotePort	: UDINT 		:= 200;(* Server port number *)
+	bEnable		: BOOL 			:= FALSE;(* TRUE => enable client data exchange, FALSE => disable *)
+	bLog		: BOOL 			:= FALSE;(* TRUE => Enable log message output, FALSE => Disable *)
+	sPrefix		: STRING 		:= 'CLIENT::';(* Log message description string (allows the identification of log message source) *)
+END_VAR
+VAR_OUTPUT
+	bConnected	: BOOL 			:= FALSE;(* TCP/IP connection state *)
+END_VAR
+VAR
+	fbApplication 	: FB_ClientApplication;(* Client application control function block *)
+	fbConnection	: FB_ClientConnection;(* Client connection/data exchange control function block *)
+	fbTx 			: FB_FrameFifo;(* Tx fifo *)
+	fbRx 			: FB_FrameFifo;(* Rx fifo *)
+	fbLog			: FB_LogFifo;(* Log/debug/error fifo *)
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[(*-------------------------- Trigger data exchange -----------------------------------------------*)
+fbConnection( 	sSrvNetID := sSrvNetID, fbTx := fbTx, fbRx := fbRx, fbLog := fbLog, 
+				bEnable := bEnable, sRemoteHost := sRemoteHost, nRemotePort := nRemotePort,  
+				bLog := bLog, sPrefix := sPrefix, bConnected=>bConnected );
+IF fbConnection.bConnected THEN(* Connection established *)
+	fbApplication( fbTx := fbTx, fbRx := fbRx, fbLog := fbLog );
+END_IF]]></ST>
+    </Implementation>
+    <ObjectProperties />
+  </POU>
+</TcPlcObject>
