@@ -58,7 +58,8 @@ END_VAR
 					fbLog.Clear( sPrefix := sPrefix, bLog := bLog );(* Clear listener log fifo *)
 					bReset := FALSE;
 
-					eStep := eSERVER_STATE_LISTENER_OPEN_START;
+					fbCreate(bListener:=TRUE, bExecute:=TRUE);
+					eStep := eSERVER_STATE_SOCKET_CREATE;
 				END_IF
 			ELSE
 				eStep := eSERVER_STATE_REMOTE_CLIENTS_CLOSE;
@@ -100,7 +101,7 @@ END_VAR
 		IF NOT fbListen.bBusy THEN
 			IF NOT fbListen.bError THEN
 				bListening 	:= TRUE;
-				fbLog.Message( sMessage := 'Listener socket opened!', hSocket := fbListen.hListener );
+				fbLog.Message( sMessage := 'Listener socket opened!', hSocket := hSocketListener );
 				eStep := eSERVER_STATE_IDLE;
 			ELSE
 				fbLog.Error( sMessage := 'FB_SocketListen()', nErrId := fbListen.nErrId );
@@ -114,7 +115,7 @@ END_VAR
 
 		FOR i:= 1 TO MAX_CLIENT_CONNECTIONS DO
 			aConnections[i]( fbTx := aTx[i], fbRx := aRx[i], fbLog := aLog[i],
-							hListener := fbListen.hListener, bReset := bReset,
+							hListener := hSocketListener, bReset := bReset,
 							sSrvNetID := sSrvNetID, bEnable := bEnable,	bLog := bLog ); 
 			IF bReset THEN
 				bReset := FALSE; 
@@ -134,7 +135,7 @@ END_VAR
 		FOR i:= 1 TO MAX_CLIENT_CONNECTIONS DO
 			(* Close all remote client (accepted) sockets *)
 			aConnections[i]( fbTx := aTx[i], fbRx := aRx[i], fbLog := aLog[i],
-							hListener := fbListen.hListener, bReset := bReset,
+							hListener := hSocketListener, bReset := bReset,
 							sSrvNetID := sSrvNetID, bEnable := FALSE, bLog := bLog ); 
 			IF aConnections[i].bAccepted THEN
 				nAccepted := nAccepted + 1;(* Count the number of connected remote clients *)
@@ -147,9 +148,9 @@ END_VAR
 		END_IF
 
 	eSERVER_STATE_LISTENER_CLOSE_START:
-		fbLog.Message( sMessage := 'Closing listener socket!', hSocket := fbListen.hListener );
+		fbLog.Message( sMessage := 'Closing listener socket!', hSocket := hSocketListener );
 		fbClose( bExecute := FALSE );
-		fbClose( sSrvNetID := sSrvNetID, hSocket := fbListen.hListener, bExecute:= TRUE );
+		fbClose( sSrvNetID := sSrvNetID, hSocket := hSocketListener, bExecute:= TRUE );
 		eStep := eSERVER_STATE_LISTENER_CLOSE_WAIT;
 
 	eSERVER_STATE_LISTENER_CLOSE_WAIT:
@@ -182,7 +183,9 @@ END_CASE
 ]]></ST>
     </Implementation>
     <LineIds Name="FB_Server">
-      <LineId Id="3" Count="21" />
+      <LineId Id="3" Count="9" />
+      <LineId Id="234" Count="0" />
+      <LineId Id="13" Count="11" />
       <LineId Id="153" Count="1" />
       <LineId Id="156" Count="3" />
       <LineId Id="161" Count="5" />

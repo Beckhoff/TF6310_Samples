@@ -20,7 +20,7 @@
 					<CLSID ClassFactory="TcPlc30">{08500001-0000-0000-F000-000000000064}</CLSID>
 					<Contexts>
 						<Context>
-							<Id NeedCalleeCall="true" OTCID="#x01010011">0</Id>
+							<Id NeedCalleeCall="true">0</Id>
 							<Name>PlcTaskServer</Name>
 							<ManualConfig>
 								<OTCID>#x02010010</OTCID>

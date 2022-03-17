@@ -70,7 +70,8 @@ END_VAR]]></Declaration>
 					fbResponseTimer( IN := FALSE, PT := PLCPRJ_RECEIVE_TIMEOUT );
 					fbReconnectTimer( IN := FALSE, PT := tReconnect );
 
-					eStep := eCONNECTION_STATE_CONNECT_START;
+					fbCreate(bListener:=FALSE, bExecute:=TRUE);
+					eStep := eCONNECTION_STATE_SOCKET_CREATE;
 				END_IF
 			ELSE
 				eStep := eCONNECTION_STATE_CLOSE_START;
@@ -114,7 +115,7 @@ END_VAR]]></Declaration>
 		IF NOT fbConnect.bBusy THEN
 			IF NOT fbConnect.bError THEN
 				bConnected 	:= TRUE;
-				fbLog.Message( sMessage := 'Connection established!', hSocket := fbConnect.hSocket );
+				fbLog.Message( sMessage := 'Connection established!', hSocket := hSocket );
 				eStep := eCONNECTION_STATE_IDLE;
 			ELSE
 				fbLog.Error( sMessage := 'FB_SocketConnect()', nErrID := fbConnect.nErrId );
@@ -135,7 +136,7 @@ END_VAR]]></Declaration>
 				fbTx.RemoveHead( sGet => sTxFrame );(* Remove oldest string entry s*)
 				IF fbTx.bOk THEN(* Success *)
 					fbSend( bExecute := FALSE );
-					fbSend(	sSrvNetID := sSrvNetID, hSocket	:= fbConnect.hSocket,
+					fbSend(	sSrvNetID := sSrvNetID, hSocket	:= hSocket,
 							pSrc	:= ADR( sTxFrame ),
 							cbLen	:= INT_TO_UDINT(LEN( sTxFrame )) + 1,(* String length inclusive the zero delimiter *)
 							bExecute:= TRUE );
@@ -159,7 +160,7 @@ END_VAR]]></Declaration>
 					fbPollTimer( IN := FALSE, PT := PLCPRJ_RECEIVE_POLLING_TIME );
 					fbReceive( bExecute := FALSE );
 					fbReceive( 	sSrvNetID := sSrvNetID, 
-								hSocket	:= fbConnect.hSocket,
+								hSocket	:= hSocket,
 								pDest	:= ADR( rxBuffer ) + cbReceived,
 								cbLen	:= SIZEOF( rxBuffer ) - cbReceived,
 								bExecute:= TRUE );
@@ -227,10 +228,10 @@ END_VAR]]></Declaration>
 
 		
 	eCONNECTION_STATE_CLOSE_START:
-		fbLog.Message( sMessage := 'Closing connection!', hSocket := fbConnect.hSocket );
+		fbLog.Message( sMessage := 'Closing connection!', hSocket := hSocket );
 		fbClose( bExecute := FALSE );
 		fbClose( sSrvNetID := sSrvNetID, 
-					hSocket:= fbConnect.hSocket, 
+					hSocket:= hSocket, 
 					bExecute:= TRUE );
 		eStep := eCONNECTION_STATE_CLOSE_WAIT;
 
@@ -256,7 +257,9 @@ END_CASE
 ]]></ST>
     </Implementation>
     <LineIds Name="FB_ClientConnection">
-      <LineId Id="3" Count="28" />
+      <LineId Id="3" Count="17" />
+      <LineId Id="309" Count="0" />
+      <LineId Id="21" Count="10" />
       <LineId Id="235" Count="1" />
       <LineId Id="238" Count="10" />
       <LineId Id="237" Count="0" />

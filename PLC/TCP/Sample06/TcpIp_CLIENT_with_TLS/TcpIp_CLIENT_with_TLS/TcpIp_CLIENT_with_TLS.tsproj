@@ -15,12 +15,12 @@
 		</System>
 		<Plc>
 			<Project GUID="{52761EC0-3691-4DBB-B5CB-C5C883C976CD}" Name="TcpIp_CLIENT_with_TLS" PrjFilePath="TcpIp_CLIENT_with_TLS\TcpIp_CLIENT_with_TLS.plcproj" TmcFilePath="TcpIp_CLIENT_with_TLS\TcpIp_CLIENT_with_TLS.tmc" ReloadTmc="true" AmsPort="851" FileArchiveSettings="#x0002">
-				<Instance Id="#x08502000" TcSmClass="TComPlcObjDef" TmcPath="TcpIp_CLIENT_with_TLS\TcpIp_CLIENT.tmc">
+				<Instance Id="#x08502000" TcSmClass="TComPlcObjDef" TmcPath="TcpIp_CLIENT_with_TLS\TcpIp_CLIENT_with_TLS.tmc">
 					<Name>TcpIp_CLIENT_with_TLS Instance</Name>
 					<CLSID ClassFactory="TcPlc30">{08500001-0000-0000-F000-000000000064}</CLSID>
 					<Contexts>
 						<Context>
-							<Id NeedCalleeCall="true" OTCID="#x01010011">0</Id>
+							<Id NeedCalleeCall="true">0</Id>
 							<Name>PlcTaskClient</Name>
 							<ManualConfig>
 								<OTCID>#x02010010</OTCID>
