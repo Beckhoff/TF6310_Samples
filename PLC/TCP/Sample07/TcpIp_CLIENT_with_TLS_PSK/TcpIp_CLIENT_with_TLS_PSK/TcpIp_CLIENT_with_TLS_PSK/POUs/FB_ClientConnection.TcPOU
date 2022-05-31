@@ -9,7 +9,7 @@ VAR_IN_OUT
 END_VAR
 VAR_INPUT
 	sSrvNetID		: T_AmsNetID 	:= '';(* TwinCAT TCP/IP server network address *)
-	sRemoteHost		: T_IPv4Addr 	:= '127.0.0.1';(* IP adress of remote server *)
+	sRemoteHost		: T_IPv4Addr 	:= '';(* IP adress of remote server *)
 	nRemotePort		: UDINT 		:= 0;(* Server port number *)
 	bEnable			: BOOL 			:= FALSE;(* TRUE => connect and exchange data, FALSE => disconnect *)
 	tReconnect 		: TIME 			:= T#45S;(* Try to reconnect after this time *)
@@ -26,13 +26,10 @@ VAR
 	fbReceive		: FB_SocketReceive;
 	fbCreate		: FB_TlsSocketCreate;
 	fbSetPsk		: FB_TlsSocketSetPsk;
-	psk				: STRING := 'ABCDEF';
+	pskKey			: ARRAY [0..14] OF BYTE := [16#1B,16#D0,16#6F,16#D2,16#56,16#16,16#7D,16#C1,16#E8,16#C7,16#48,16#2A,16#8E,16#F5,16#FF];
+	pskIdentity		: STRING := 'MyIdentity';
 	eStep			: E_ConnectionSteps;
 
-	caPath			: STRING := 'C:\TwinCAT\3.1\Target\Certificates\rootCA.crt';
-	certPath		: STRING := 'C:\TwinCAT\3.1\Target\Certificates\rknb2.crt';
-	keyPath			: STRING := 'C:\TwinCAT\3.1\Target\Certificates\rknb2.key';
-	pwd				: STRING := '';
 	hSocket			: T_HSOCKET;
 		
 	bSndBusy 		: BOOL;(* Tx state *)
@@ -90,7 +87,7 @@ END_VAR]]></Declaration>
 				RETURN;
 			END_IF			
 			fbSetPsk(bExecute:=FALSE);		
-			fbSetPsk(hSocket:=hSocket, pskKey := ADR(psk), pskKeyLen := SIZEOF(psk), bExecute:=TRUE);
+			fbSetPsk(hSocket:=hSocket, sIdentity:=pskIdentity, pskKey := ADR(pskKey), pskKeyLen := SIZEOF(pskKey), bExecute:=TRUE);
 			eStep := eCONNECTION_STATE_CONNECT_START;
 		END_IF
 
@@ -103,7 +100,7 @@ END_VAR]]></Declaration>
 				RETURN;				
 			END_IF
 			fbConnect(hSocket:=hSocket, bExecute:=FALSE);				
-			fbConnect(hSocket:=hSocket, bExecute:=TRUE, sRemoteHost := '18.159.233.62', nRemotePort := 1883);
+			fbConnect(hSocket:=hSocket, bExecute:=TRUE, sRemoteHost := sRemoteHost, nRemotePort := nRemotePort);
 			eStep := eCONNECTION_STATE_CONNECT_WAIT;
 		END_IF
 

@@ -1,10 +1,11 @@
-﻿<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.0.23">
-  <POU Name="FB_Client" Id="{c11f7280-27ca-4f3d-865b-a554dd255326}">
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.10">
+  <POU Name="FB_Client" Id="{c11f7280-27ca-4f3d-865b-a554dd255326}" SpecialFunc="None">
     <Declaration><![CDATA[FUNCTION_BLOCK FB_Client
 VAR_INPUT
 	sSrvNetID	: T_AmsNetID	:= '';(* TwinCAT TCP/IP server network address *)
-	sRemoteHost	: T_IPv4Addr 	:= '127.0.0.1';(* Server network address *)
-	nRemotePort	: UDINT 		:= 200;(* Server port number *)
+	sRemoteHost	: T_IPv4Addr 	:= '18.159.233.62';(* Server network address *)
+	nRemotePort	: UDINT 		:= 1883;(* Server port number *)
 	bEnable		: BOOL 			:= FALSE;(* TRUE => enable client data exchange, FALSE => disable *)
 	bLog		: BOOL 			:= FALSE;(* TRUE => Enable log message output, FALSE => Disable *)
 	sPrefix		: STRING 		:= 'CLIENT::';(* Log message description string (allows the identification of log message source) *)
@@ -29,6 +30,9 @@ IF fbConnection.bConnected THEN(* Connection established *)
 	fbApplication( fbTx := fbTx, fbRx := fbRx, fbLog := fbLog );
 END_IF]]></ST>
     </Implementation>
-    <ObjectProperties />
+    <LineIds Name="FB_Client">
+      <LineId Id="3" Count="5" />
+      <LineId Id="2" Count="0" />
+    </LineIds>
   </POU>
 </TcPlcObject>
