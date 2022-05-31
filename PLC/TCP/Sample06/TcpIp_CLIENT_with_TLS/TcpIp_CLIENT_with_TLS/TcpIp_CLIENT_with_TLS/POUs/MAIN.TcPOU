@@ -11,13 +11,13 @@ VAR
 	bEnable5 	: BOOL := FALSE;(* TRUE => Enable client5 data exchange, FALSE => Disable *)
 	bLog		: BOOL := TRUE;(* TRUE => Enable message/error log, FALSE => Disable*)
 	
-	fbClient1 : FB_Client := ( sRemoteHost:= '127.0.0.1',(* IP address of remote server! *)
-								nRemotePort:= 200,(* Port number of remote server! *) 
+	fbClient1 : FB_Client := ( sRemoteHost:= '18.159.233.62',(* IP address of remote server! *)
+								nRemotePort:= 1883,(* Port number of remote server! *) 
 								sPrefix := 'CLIENT1::' );(* TCP/IP client (connection) instance *)
-	fbClient2 : FB_Client := ( sRemoteHost:= '127.0.0.1', nRemotePort:= 200, sPrefix := 'CLIENT2::' );
-	fbClient3 : FB_Client := ( sRemoteHost:= '127.0.0.1', nRemotePort:= 200, sPrefix := 'CLIENT3::' );
-	fbClient4 : FB_Client := ( sRemoteHost:= '127.0.0.1', nRemotePort:= 200, sPrefix := 'CLIENT4::' );
-	fbClient5 : FB_Client := ( sRemoteHost:= '127.0.0.1', nRemotePort:= 200, sPrefix := 'CLIENT5::' );
+	fbClient2 : FB_Client := ( sRemoteHost:= '18.159.233.62', nRemotePort:= 1883, sPrefix := 'CLIENT2::' );
+	fbClient3 : FB_Client := ( sRemoteHost:= '18.159.233.62', nRemotePort:= 1883, sPrefix := 'CLIENT3::' );
+	fbClient4 : FB_Client := ( sRemoteHost:= '18.159.233.62', nRemotePort:= 1883, sPrefix := 'CLIENT4::' );
+	fbClient5 : FB_Client := ( sRemoteHost:= '18.159.233.62', nRemotePort:= 1883, sPrefix := 'CLIENT5::' );
 
 	fbCloseAll		: FB_SocketCloseAll;
 	bInitialize		: BOOL := TRUE;

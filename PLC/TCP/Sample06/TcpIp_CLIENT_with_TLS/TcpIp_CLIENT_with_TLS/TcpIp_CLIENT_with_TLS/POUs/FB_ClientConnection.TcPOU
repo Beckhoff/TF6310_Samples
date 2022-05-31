@@ -10,7 +10,7 @@ END_VAR
 VAR_INPUT
 	sSrvNetID		: T_AmsNetID 	:= '';(* TwinCAT TCP/IP server network address *)
 	sRemoteHost		: T_IPv4Addr 	:= '127.0.0.1';(* IP adress of remote server *)
-	nRemotePort		: UDINT 		:= 0;(* Server port number *)
+	nRemotePort		: UINT 			:= 0;(* Server port number *)
 	bEnable			: BOOL 			:= FALSE;(* TRUE => connect and exchange data, FALSE => disconnect *)
 	tReconnect 		: TIME 			:= T#45S;(* Try to reconnect after this time *)
 	bLog			: BOOL 			:= FALSE;(* TRUE => Enable log message output, FALSE => Disable *)
@@ -106,7 +106,7 @@ END_VAR]]></Declaration>
 				RETURN;				
 			END_IF
 			fbConnect(hSocket:=hSocket, bExecute:=FALSE);				
-			fbConnect(hSocket:=hSocket, bExecute:=TRUE, sRemoteHost := '18.159.233.62', nRemotePort := 1883);
+			fbConnect(hSocket:=hSocket, bExecute:=TRUE, sRemoteHost := sRemoteHost, nRemotePort := nRemotePort);
 			eStep := eCONNECTION_STATE_CONNECT_WAIT;
 		END_IF
 

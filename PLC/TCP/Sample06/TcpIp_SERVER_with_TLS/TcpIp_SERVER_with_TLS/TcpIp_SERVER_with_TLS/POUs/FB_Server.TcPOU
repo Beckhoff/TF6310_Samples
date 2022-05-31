@@ -92,7 +92,7 @@ END_VAR
 				eStep := eSERVER_STATE_ERROR;
 			END_IF
 			fbListen(bExecute:=FALSE, hListener:=hSocketListener);				
-			fbListen(bExecute:=TRUE, hListener:=hSocketListener, sLocalHost := '172.30.1.160', nLocalPort:=1883);
+			fbListen(bExecute:=TRUE, hListener:=hSocketListener, sLocalHost := sLocalHost, nLocalPort:=nLocalPort);
 			eStep := eSERVER_STATE_LISTENER_OPEN_WAIT;
 		END_IF
 
