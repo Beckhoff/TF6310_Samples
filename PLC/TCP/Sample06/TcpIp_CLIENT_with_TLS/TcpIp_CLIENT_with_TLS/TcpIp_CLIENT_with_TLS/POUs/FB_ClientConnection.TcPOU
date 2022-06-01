@@ -26,15 +26,17 @@ VAR
 	fbReceive		: FB_SocketReceive;
 	fbCreate		: FB_TlsSocketCreate;
 	fbAddCa			: FB_TlsSocketAddCa;
+	fbAddCrl		: FB_TlsSocketAddCrl;
 	fbSetCert		: FB_TlsSocketSetCert; 
 	eStep			: E_ConnectionSteps;
 
-	caPath			: STRING := 'C:\TwinCAT\3.1\Target\Certificates\rootCA.crt';
-	certPath		: STRING := 'C:\TwinCAT\3.1\Target\Certificates\rknb2.crt';
-	keyPath			: STRING := 'C:\TwinCAT\3.1\Target\Certificates\rknb2.key';
+	caPath			: STRING := 'C:\TwinCAT\3.1\Target\Certificates\ca\intermediateCA.pem';
+	certPath		: STRING := 'C:\TwinCAT\3.1\Target\Certificates\ca\TcpIpClient.pem';
+	keyPath			: STRING := 'C:\TwinCAT\3.1\Target\Certificates\ca\TcpIpClient.key';
+	crlPath			: STRING := 'C:\TwinCAT\3.1\Target\Certificates\ca\intermediateCA.crl';
 	pwd				: STRING := '';
-	hSocket			: T_HSOCKET;
-		
+	
+	hSocket			: T_HSOCKET;		
 	bSndBusy 		: BOOL;(* Tx state *)
 	bRcvBusy 		: BOOL;(* Rx state *)
 	bDisconnect		: BOOL;(* Disconnect flag, if set the socket will be closed *)
@@ -90,18 +92,21 @@ END_VAR]]></Declaration>
 				RETURN;
 			END_IF			
 			fbAddCa(bExecute:=FALSE);
+			fbAddCrl(bExecute:=FALSE);
 			fbSetCert(bExecute:=FALSE);
-			fbAddCa(hSocket:=hSocket, caPath:=caPath, bExecute:=TRUE);			
+			fbAddCa(hSocket:=hSocket, caPath:=caPath, bExecute:=TRUE);
+			fbAddCrl(hSocket:=hSocket, caPath:=crlPath, bExecute:=TRUE);		
 			fbSetCert(hSocket:=hSocket, sCert:= certPath, sKey := keyPath, sKeyPwd:= pwd, bExecute:=TRUE);
 			eStep := eCONNECTION_STATE_CONNECT_START;
 		END_IF
 
 	eCONNECTION_STATE_CONNECT_START:
 		fbAddCa(bExecute:=FALSE);
+		fbAddCrl(bExecute:=FALSE);
 		fbSetCert(bExecute:=FALSE);
 		
-		IF NOT fbAddCa.bBusy AND NOT fbSetCert.bBusy THEN
-			IF fbAddCa.bError OR fbSetCert.bError THEN 
+		IF NOT fbAddCa.bBusy AND NOT fbAddCrl.bBusy AND NOT fbSetCert.bBusy THEN
+			IF fbAddCa.bError OR fbAddCrl.bError OR fbSetCert.bError THEN 
 				eStep := eCONNECTION_STATE_ERROR;
 				RETURN;				
 			END_IF
@@ -261,10 +266,16 @@ END_CASE
       <LineId Id="309" Count="0" />
       <LineId Id="21" Count="10" />
       <LineId Id="235" Count="1" />
-      <LineId Id="238" Count="10" />
+      <LineId Id="238" Count="6" />
+      <LineId Id="361" Count="0" />
+      <LineId Id="245" Count="1" />
+      <LineId Id="360" Count="0" />
+      <LineId Id="247" Count="1" />
       <LineId Id="237" Count="0" />
       <LineId Id="32" Count="1" />
-      <LineId Id="249" Count="1" />
+      <LineId Id="249" Count="0" />
+      <LineId Id="362" Count="0" />
+      <LineId Id="250" Count="0" />
       <LineId Id="34" Count="0" />
       <LineId Id="253" Count="7" />
       <LineId Id="252" Count="0" />
