@@ -83,7 +83,7 @@ END_VAR
 			fbAddCrl(bExecute:=FALSE);
 			fbSetCert(bExecute:=FALSE);
 			fbAddCa(hSocket:=hSocketListener, caPath:=caPath, bExecute:=TRUE);
-			fbAddCrl(hSocket:=hSocketListener, caPath:=crlPath, bExecute:=TRUE);			
+			fbAddCrl(hSocket:=hSocketListener, crlPath:=crlPath, bExecute:=TRUE);			
 			fbSetCert(hSocket:=hSocketListener, sCert:= certPath, sKey := keyPath, sKeyPwd:= pwd, bExecute:=TRUE);
 			eStep := eSERVER_STATE_LISTENER_OPEN_START;
 		END_IF	

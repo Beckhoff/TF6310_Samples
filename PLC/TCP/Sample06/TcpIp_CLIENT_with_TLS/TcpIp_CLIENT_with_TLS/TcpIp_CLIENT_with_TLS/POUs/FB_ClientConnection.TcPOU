@@ -95,7 +95,7 @@ END_VAR]]></Declaration>
 			fbAddCrl(bExecute:=FALSE);
 			fbSetCert(bExecute:=FALSE);
 			fbAddCa(hSocket:=hSocket, caPath:=caPath, bExecute:=TRUE);
-			fbAddCrl(hSocket:=hSocket, caPath:=crlPath, bExecute:=TRUE);		
+			fbAddCrl(hSocket:=hSocket, crlPath:=crlPath, bExecute:=TRUE);		
 			fbSetCert(hSocket:=hSocket, sCert:= certPath, sKey := keyPath, sKeyPwd:= pwd, bExecute:=TRUE);
 			eStep := eCONNECTION_STATE_CONNECT_START;
 		END_IF
