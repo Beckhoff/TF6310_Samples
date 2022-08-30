@@ -18,7 +18,8 @@
     <FileVersion>1.0.0.0</FileVersion>
     <LibraryReferences>{0e9cd4b4-5eaa-48d4-8e79-4816f95dc709}</LibraryReferences>
     <CompilerDefines />
-    <dynamic_memory_size>65536</dynamic_memory_size>
+    <dynamic_memory_size>
+    </dynamic_memory_size>
     <ProgramVersion>3.1.0.5</ProgramVersion>
     <SccProjectName>SAK</SccProjectName>
     <SccProvider>SAK</SccProvider>
@@ -79,10 +80,6 @@
     <PlaceholderReference Include="Tc2_Utilities">
       <DefaultResolution>Tc2_Utilities, * (Beckhoff Automation GmbH)</DefaultResolution>
       <Namespace>Tc2_Utilities</Namespace>
-    </PlaceholderReference>
-    <PlaceholderReference Include="Tc3_Interfaces">
-      <DefaultResolution>Tc3_Interfaces, * (Beckhoff Automation GmbH)</DefaultResolution>
-      <Namespace>Tc3_Interfaces</Namespace>
     </PlaceholderReference>
     <PlaceholderReference Include="Tc3_Module">
       <DefaultResolution>Tc3_Module, * (Beckhoff Automation GmbH)</DefaultResolution>

@@ -1,27 +1,11 @@
 ﻿
-Microsoft Visual Studio Solution File, Format Version 11.00
-# Visual Studio 2010
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.32413.511
+MinimumVisualStudioVersion = 10.0.40219.1
 Project("{B1E792BE-AA5F-4E3C-8C82-674BF9C0715B}") = "TcSocketHelper_MultiServerString", "TcSocketHelper_MultiServerString\TcSocketHelper_MultiServerString.tsproj", "{B9CAA789-5432-42A8-B94E-F263834E5CDA}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{2B0E7D74-7D65-46E9-8278-23F537D53652}"
-	ProjectSection(SolutionItems) = preProject
-		TcSocketHelper_MultiServerString\TcSocketHelper_MultiServerString.tpzip = TcSocketHelper_MultiServerString\TcSocketHelper_MultiServerString.tpzip
-	EndProjectSection
-EndProject
 Global
-	GlobalSection(TeamFoundationVersionControl) = preSolution
-		SccNumberOfProjects = 3
-		SccEnterpriseProvider = {4CA58AB2-18FA-4F8D-95D4-32DDF27D184C}
-		SccTeamFoundationServer = http://nt-teamfd01:8080/
-		SccLocalPath0 = .
-		SccProjectUniqueName1 = TcSocketHelper_MultiServerString\\TcSocketHelper_MultiServerString.tsproj
-		SccProjectName1 = TcSocketHelper_MultiServerString
-		SccLocalPath1 = TcSocketHelper_MultiServerString
-		SccProjectUniqueName2 = TcSocketHelper_MultiServerString\\TcSocketHelper_MultiServerString\\TcSocketHelper_MultiServerString.plcproj
-		SccProjectTopLevelParentUniqueName2 = TcSocketHelper_MultiServerString\\TcSocketHelper_MultiServerString.tsproj
-		SccProjectName2 = TcSocketHelper_MultiServerString/TcSocketHelper_MultiServerString
-		SccLocalPath2 = TcSocketHelper_MultiServerString\\TcSocketHelper_MultiServerString
-	EndGlobalSection
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|TwinCAT CE7 (ARMV7) = Debug|TwinCAT CE7 (ARMV7)
 		Debug|TwinCAT RT (x64) = Debug|TwinCAT RT (x64)
@@ -52,5 +36,8 @@ Global
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {BEA3AA6E-874C-4E58-BC94-7A27DBC2CF9D}
 	EndGlobalSection
 EndGlobal

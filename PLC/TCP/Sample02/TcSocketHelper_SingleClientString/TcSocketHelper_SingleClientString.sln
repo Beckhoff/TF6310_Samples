@@ -1,27 +1,11 @@
 ﻿
-Microsoft Visual Studio Solution File, Format Version 11.00
-# Visual Studio 2010
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.32413.511
+MinimumVisualStudioVersion = 10.0.40219.1
 Project("{B1E792BE-AA5F-4E3C-8C82-674BF9C0715B}") = "TcSocketHelper_SingleClientString", "TcSocketHelper_SingleClientString\TcSocketHelper_SingleClientString.tsproj", "{A20FE532-AB49-4B87-A7AA-5A0B3FEF2B9C}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{FB7208CB-BDC4-4717-8678-FDFE4DF46D5D}"
-	ProjectSection(SolutionItems) = preProject
-		TcSocketHelper_SingleClientString\TcSocketHelper_SingleClientString.tpzip = TcSocketHelper_SingleClientString\TcSocketHelper_SingleClientString.tpzip
-	EndProjectSection
-EndProject
 Global
-	GlobalSection(TeamFoundationVersionControl) = preSolution
-		SccNumberOfProjects = 3
-		SccEnterpriseProvider = {4CA58AB2-18FA-4F8D-95D4-32DDF27D184C}
-		SccTeamFoundationServer = http://nt-teamfd01:8080/
-		SccLocalPath0 = .
-		SccProjectUniqueName1 = TcSocketHelper_SingleClientString\\TcSocketHelper_SingleClientString.tsproj
-		SccProjectName1 = TcSocketHelper_SingleClientString
-		SccLocalPath1 = TcSocketHelper_SingleClientString
-		SccProjectUniqueName2 = TcSocketHelper_SingleClientString\\TcSocketHelper_SingleClientString\\TcSocketHelper_SingleClientString.plcproj
-		SccProjectTopLevelParentUniqueName2 = TcSocketHelper_SingleClientString\\TcSocketHelper_SingleClientString.tsproj
-		SccProjectName2 = TcSocketHelper_SingleClientString/TcSocketHelper_SingleClientString
-		SccLocalPath2 = TcSocketHelper_SingleClientString\\TcSocketHelper_SingleClientString
-	EndGlobalSection
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|TwinCAT CE7 (ARMV7) = Debug|TwinCAT CE7 (ARMV7)
 		Debug|TwinCAT RT (x64) = Debug|TwinCAT RT (x64)
@@ -52,5 +36,8 @@ Global
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {363579EF-A67F-409F-8D8C-B3EDD23FD380}
 	EndGlobalSection
 EndGlobal

@@ -1,27 +1,11 @@
 ﻿
-Microsoft Visual Studio Solution File, Format Version 11.00
-# Visual Studio 2010
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.32413.511
+MinimumVisualStudioVersion = 10.0.40219.1
 Project("{B1E792BE-AA5F-4E3C-8C82-674BF9C0715B}") = "UdpMulticastDevice2", "UdpMulticastDevice2\UdpMulticastDevice2.tsproj", "{3F84F674-220B-48E5-9BA8-188A80C3D3B1}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{463D7E35-4E27-4087-ADD0-1CFE0045D592}"
-	ProjectSection(SolutionItems) = preProject
-		UdpMulticastDevice2\UdpMulticastDevice2.tpzip = UdpMulticastDevice2\UdpMulticastDevice2.tpzip
-	EndProjectSection
-EndProject
 Global
-	GlobalSection(TeamFoundationVersionControl) = preSolution
-		SccNumberOfProjects = 3
-		SccEnterpriseProvider = {4CA58AB2-18FA-4F8D-95D4-32DDF27D184C}
-		SccTeamFoundationServer = http://nt-teamfd01:8080/
-		SccLocalPath0 = .
-		SccProjectUniqueName1 = UdpMulticastDevice2\\UdpMulticastDevice2.tsproj
-		SccProjectName1 = UdpMulticastDevice2
-		SccLocalPath1 = UdpMulticastDevice2
-		SccProjectUniqueName2 = UdpMulticastDevice2\\UdpMulticastDevice2\\UdpMulticastDevice2.plcproj
-		SccProjectTopLevelParentUniqueName2 = UdpMulticastDevice2\\UdpMulticastDevice2.tsproj
-		SccProjectName2 = UdpMulticastDevice2/UdpMulticastDevice2
-		SccLocalPath2 = UdpMulticastDevice2\\UdpMulticastDevice2
-	EndGlobalSection
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|TwinCAT CE7 (ARMV7) = Debug|TwinCAT CE7 (ARMV7)
 		Debug|TwinCAT RT (x64) = Debug|TwinCAT RT (x64)
@@ -52,5 +36,8 @@ Global
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {4D96BE21-5175-4FF6-A465-69FC242DFC45}
 	EndGlobalSection
 EndGlobal

@@ -1,29 +1,11 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 2013
-VisualStudioVersion = 12.0.21005.1
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.32413.511
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{B1E792BE-AA5F-4E3C-8C82-674BF9C0715B}") = "PeerToPeerB", "PeerToPeerB\PeerToPeerB.tsproj", "{C3C6118D-9EBA-4A69-8DC2-066B7E8EFE84}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{2EC753B0-A989-41BB-A6EA-6A917021C0D1}"
-	ProjectSection(SolutionItems) = preProject
-		PeerToPeerB\PeerToPeerB.tpzip = PeerToPeerB\PeerToPeerB.tpzip
-	EndProjectSection
-EndProject
 Global
-	GlobalSection(TeamFoundationVersionControl) = preSolution
-		SccNumberOfProjects = 3
-		SccEnterpriseProvider = {4CA58AB2-18FA-4F8D-95D4-32DDF27D184C}
-		SccTeamFoundationServer = http://nt-teamfd02.beckhoff.com:8080/tfs/defaultcollection
-		SccLocalPath0 = .
-		SccProjectUniqueName1 = PeerToPeerB\\PeerToPeerB.tsproj
-		SccProjectName1 = PeerToPeerB
-		SccLocalPath1 = PeerToPeerB
-		SccProjectUniqueName2 = PeerToPeerB\\PeerToPeerB\\PeerToPeerB.plcproj
-		SccProjectTopLevelParentUniqueName2 = PeerToPeerB\\PeerToPeerB.tsproj
-		SccProjectName2 = PeerToPeerB/PeerToPeerB
-		SccLocalPath2 = PeerToPeerB\\PeerToPeerB
-	EndGlobalSection
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|TwinCAT CE7 (ARMV7) = Debug|TwinCAT CE7 (ARMV7)
 		Debug|TwinCAT RT (x64) = Debug|TwinCAT RT (x64)
@@ -54,5 +36,8 @@ Global
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {0149ED93-4AC9-463D-B2F5-437914615B67}
 	EndGlobalSection
 EndGlobal
