@@ -1,43 +1,44 @@
-﻿<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.0.23">
-  <POU Name="FB_ServerConnection" Id="{9a938bd0-a6e6-42ff-8c55-c498bff2653c}">
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1">
+  <POU Name="FB_ServerConnection" Id="{9a938bd0-a6e6-42ff-8c55-c498bff2653c}" SpecialFunc="None">
     <Declaration><![CDATA[FUNCTION_BLOCK FB_ServerConnection
 VAR_IN_OUT
-	fbTx 			: FB_FrameFifo;(* TX fifo *)
-	fbRx 			: FB_FrameFifo;(* RX fifo *)
-	fbLog			: FB_LogFifo;(* Log message fifo *)
-	hListener		: T_HSOCKET;(* Listener socket handle *)
-	bReset			: BOOL;
+	fbTx            : FB_FrameFifo;(* TX fifo *)
+	fbRx            : FB_FrameFifo;(* RX fifo *)
+	fbLog           : FB_LogFifo;(* Log message fifo *)
+	hListener       : T_HSOCKET;(* Listener socket handle *)
+	bReset          : BOOL;
 END_VAR
 VAR_INPUT
-	sSrvNetID		: T_AmsNetID	:= '';(* TwinCAT TCP/IP server network address *)
-	bEnable 		: BOOL 			:= FALSE;(* TRUE => connect and exchange data, FALSE => disconnect *)
-	tReconnect 		: TIME 			:= T#1S;(* Accept new connection (reconnect) after this time *)
-	bLog			: BOOL			:= FALSE;(* TRUE => Enable log message output, FALSE => Disable *)
-	sPrefix			: STRING 		:= 'SERVERx::';(* Log message description string (allows the identification of log message source) *)
+	sSrvNetID       : T_AmsNetID :='';(* TwinCAT TCP/IP server network address *)
+	bEnable         : BOOL       :=FALSE;(* TRUE => connect and exchange data, FALSE => disconnect *)
+	tReconnect      : TIME       :=T#1S;(* Accept new connection (reconnect) after this time *)
+	bLog            : BOOL       :=FALSE;(* TRUE => Enable log message output, FALSE => Disable *)
+	sPrefix         : STRING     :='SERVERx::';(* Log message description string (allows the identification of log message source) *)
 END_VAR
 VAR_OUTPUT
-	bAccepted		: BOOL			:= FALSE;(* Accepted connection status *)
+	bAccepted       : BOOL       :=FALSE;(* Accepted connection status *)
 END_VAR
 VAR
-	fbAccept 		: FB_SocketAccept;
-	fbClose			: FB_SocketClose;
-	fbReceive		: FB_SocketReceive;
-	fbSend			: FB_SocketSend;
-	eStep			: E_ConnectionSteps;
-	bSndBusy 		: BOOL;(* Tx state *)
-	bRcvBusy 		: BOOL;(* Rx state *)
-	bDisconnect		: BOOL;(* Disconnect flag, if set the socket will be closed *)
+	fbAccept        : FB_SocketAccept;(* Accepts new server connection *)
+	fbClose         : FB_SocketClose;(* Closes accepted connection *)
+	fbReceive       : FB_SocketReceive;(* Receives data *)
+	fbSend          : FB_SocketSend;(* Sends data *)
+	eStep           : E_ConnectionSteps;
+	bSndBusy        : BOOL;(* Tx state *)
+	bRcvBusy        : BOOL;(* Rx state *)
+	bDisconnect     : BOOL;(* Disconnect flag, if set the socket will be closed *)
 
-	fbAcceptTimer	: TON;(* Accept poll timer *)
-	fbPollTimer		: TON;(* Receive poll timer *)
-	fbRequestTimer	: TON;(* Request timeout timer *)
+	fbAcceptTimer   : TON;(* Accept poll timer *)
+	fbPollTimer     : TON;(* Receive poll timer *)
+	fbRequestTimer  : TON;(* Request timeout timer *)
 	
-	rxBuffer		: ARRAY[0..PLCPRJ_BUFFER_SIZE] OF BYTE;
-	sTxFrame		: T_MaxString;
-	sRxFrame		: T_MaxString;
-	cbReceived		: UDINT;
-	nLenOfString	: UDINT;(* String length inclusive the null delimiter *)
-	bEndOfString	: BOOL := FALSE;
+	rxBuffer        : ARRAY[0..PLCPRJ_BUFFER_SIZE] OF BYTE;
+	sTxFrame        : T_MaxString;
+	sRxFrame        : T_MaxString;
+	cbReceived      : UDINT;
+	nLenOfString    : UDINT;(* String length inclusive the null delimiter *)
+	bEndOfString    : BOOL:=FALSE;
 END_VAR]]></Declaration>
     <Implementation>
       <ST><![CDATA[CASE eStep OF
@@ -73,8 +74,8 @@ END_VAR]]></Declaration>
 
 	eCONNECTION_STATE_CONNECT_START:
 		fbAccept( bExecute := FALSE );
-		fbAccept( sSrvNetID := sSrvNetID, 
-					hListener := hListener, 
+		fbAccept( sSrvNetID := sSrvNetID,
+					hListener := hListener,
 					bExecute:= TRUE );
 		eStep := eCONNECTION_STATE_CONNECT_WAIT;
 
@@ -130,7 +131,7 @@ END_VAR]]></Declaration>
 				IF fbPollTimer.Q THEN
 					fbPollTimer( IN := FALSE, PT := PLCPRJ_RECEIVE_POLLING_TIME );
 					fbReceive( bExecute := FALSE );
-					fbReceive( 	sSrvNetID := sSrvNetID, 
+					fbReceive( 	sSrvNetID := sSrvNetID,
 								hSocket	:= fbAccept.hSocket,
 								pDest	:= ADR( rxBuffer ) + cbReceived,
 								cbLen	:= SIZEOF( rxBuffer ) - cbReceived,
@@ -227,6 +228,5 @@ END_VAR]]></Declaration>
 END_CASE
 ]]></ST>
     </Implementation>
-    <ObjectProperties />
   </POU>
 </TcPlcObject>

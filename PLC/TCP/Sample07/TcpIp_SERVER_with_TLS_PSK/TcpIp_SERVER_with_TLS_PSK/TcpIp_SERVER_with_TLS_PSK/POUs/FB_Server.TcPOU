@@ -1,44 +1,44 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.10">
+<TcPlcObject Version="1.1.0.1">
   <POU Name="FB_Server" Id="{481ab15d-d96a-42ad-9e46-89f26d2633da}" SpecialFunc="None">
     <Declaration><![CDATA[FUNCTION_BLOCK FB_Server
+VAR_IN_OUT
+	fbTls          : FB_TlsConfig;(* TLS/PSK configuration *)
+END_VAR
 VAR_INPUT
-	sSrvNetID		: T_AmsNetID	:= '';(* TwinCAT TCP/IP server network address *)
-	sLocalHost		: T_IPv4Addr 	:= '127.0.0.1';(* Own IP address! *)
-	nLocalPort		: UDINT 		:= 0;(* Server port number *)
-	bEnable			: BOOL 			:= FALSE;(* TRUE => enable server data exchange, FALSE => disable *)
-	tReconnect 		: TIME 			:= T#3S;(* Reopen new listener socket after this time *)
-	bLog			: BOOL 			:= FALSE;(* TRUE => Enable log message output, FALSE => Disable *)
-	sPrefix			: STRING 		:= 'SERVER::';(* Log message description string (allows the identification of log message source) *)
+	sSrvNetID      : T_AmsNetID :='';(* TwinCAT TCP/IP server network address *)
+	sLocalHost     : T_IPv4Addr :='127.0.0.1';(* Own IP address! *)
+	nLocalPort     : UDINT      :=0;(* Server port number *)
+	bEnable        : BOOL       :=FALSE;(* TRUE => enable server data exchange, FALSE => disable *)
+	tReconnect     : TIME       :=T#3S;(* Reopen new listener socket after this time *)
+	bLog           : BOOL       :=FALSE;(* TRUE => Enable log message output, FALSE => Disable *)
+	sPrefix        : STRING     :='SERVER::';(* Log message description string (allows the identification of log message source) *)
 END_VAR
 VAR_OUTPUT
-	bListening		: BOOL			:= FALSE;(* Listener socket state *)
-	nAccepted		: UDINT			:= 0;(* Max. number of accepted client connections *)
+	bListening     : BOOL       :=FALSE;(* Listener socket state *)
+	nAccepted      : UDINT      :=0;(* Max. number of accepted client connections *)
 END_VAR
 VAR
-	aApplications	: ARRAY[1..MAX_CLIENT_CONNECTIONS] OF FB_ServerApplication;(* Server application control function blocks *)
-	aConnections	: ARRAY[1..MAX_CLIENT_CONNECTIONS] OF FB_ServerConnection := 
-													[ 	(sPrefix := 'SERVER1::'), 
-														(sPrefix := 'SERVER2::'), 
-														(sPrefix := 'SERVER3::'), 
-														(sPrefix := 'SERVER4::'), 
-														(sPrefix := 'SERVER5::') ];(* Server connection/data exchange control function blocks *)
-	aTx 			: ARRAY[1..MAX_CLIENT_CONNECTIONS] OF FB_FrameFifo;(* TX fifo *)
-	aRx 			: ARRAY[1..MAX_CLIENT_CONNECTIONS] OF FB_FrameFifo;(* RX fifo *)
-	aLog			: ARRAY[1..MAX_CLIENT_CONNECTIONS] OF FB_LogFifo;(* Listener log message fifo *)
+	aApplications  : ARRAY[1..MAX_CLIENT_CONNECTIONS] OF FB_ServerApplication;(* Server application control function blocks *)
+	aConnections   : ARRAY[1..MAX_CLIENT_CONNECTIONS] OF FB_ServerConnection :=[
+														(sPrefix := 'SERVER1::'),
+														(sPrefix := 'SERVER2::'),
+														(sPrefix := 'SERVER3::'),
+														(sPrefix := 'SERVER4::'),
+														(sPrefix := 'SERVER5::')];(* Server connection/data exchange control function blocks *)
+	aTx            : ARRAY[1..MAX_CLIENT_CONNECTIONS] OF FB_FrameFifo;(* TX fifo *)
+	aRx            : ARRAY[1..MAX_CLIENT_CONNECTIONS] OF FB_FrameFifo;(* RX fifo *)
+	aLog           : ARRAY[1..MAX_CLIENT_CONNECTIONS] OF FB_LogFifo;(* Listener log message fifo *)
 
-	fbCreate		: FB_TlsSocketCreate;
-	fbListen	 	: FB_TlsSocketListen;
-	fbSetPsk		: FB_TlsSocketSetPsk;
-	pskKey			: ARRAY [0..14] OF BYTE := [16#1B,16#D0,16#6F,16#D2,16#56,16#16,16#7D,16#C1,16#E8,16#C7,16#48,16#2A,16#8E,16#F5,16#FF];
-	pskIdentity		: STRING := 'MyIdentity';
-	fbClose			: FB_SocketClose;
-	fbLog			: FB_LogFifo;
-	fbListenTimer	: TON;
-	bReset			: BOOL := FALSE;
-	eStep			: E_ServerSteps;
-	hSocketListener : T_HSOCKET;
-	i				: UDINT;
+	fbCreate       : FB_TlsSocketCreate:=(bListener:=TRUE);(* Creates listener socket *)
+	fbListen       : FB_TlsSocketListen;(* Opens listener socket *)
+	fbSetPsk       : FB_TlsSocketSetPsk;(* Configures PSK (pre-shared key) *)
+	fbClose        : FB_SocketClose;(* Closes socket *)
+	fbLog          : FB_LogFifo;
+	fbListenTimer  : TON;
+	bReset         : BOOL :=FALSE;
+	eStep          : E_ServerSteps;
+	i              : UDINT;
 END_VAR
 
 ]]></Declaration>
@@ -54,7 +54,8 @@ END_VAR
 					fbLog.Clear( sPrefix := sPrefix, bLog := bLog );(* Clear listener log fifo *)
 					bReset := FALSE;
 
-					fbCreate(bListener:=TRUE, bExecute:=TRUE);
+					fbCreate(bExecute:=FALSE);
+					fbCreate(sSrvNetID:=sSrvNetID, bExecute:=TRUE);
 					eStep := eSERVER_STATE_SOCKET_CREATE;
 				END_IF
 			ELSE
@@ -68,36 +69,42 @@ END_VAR
 		END_IF
 		
 	eSERVER_STATE_SOCKET_CREATE:
-		fbCreate(bExecute:=FALSE, hSocket=>hSocketListener);
+		fbCreate(bExecute:=FALSE);
 		IF NOT fbCreate.bBusy THEN
-			IF fbCreate.bError THEN 
+			IF NOT fbCreate.bError THEN
+				fbSetPsk(bExecute:=FALSE);
+				IF (fbTls.pskKeyLen <> 0) AND (fbTls.pskKey <> 0) AND (fbTls.sIdentity <> '') THEN
+					fbSetPsk(sSrvNetID:=sSrvNetID, hSocket:=fbCreate.hSocket, sIdentity:=fbTls.sIdentity, pskKey:=fbTls.pskKey, pskKeyLen:=fbTls.pskKeyLen, bExecute:=TRUE);
+				END_IF
+				eStep := eSERVER_STATE_LISTENER_OPEN_START;
+			ELSE
+				fbLog.Error( sMessage := 'FB_TlsSocketCreate()', nErrId := fbCreate.nErrId);
 				eStep := eSERVER_STATE_ERROR;
-			END_IF			
-			fbSetPsk(bExecute:=FALSE);			
-			fbSetPsk(hSocket:=hSocketListener, sIdentity:=pskIdentity, pskKey := ADR(pskKey), pskKeyLen := SIZEOF(pskKey), bExecute:=TRUE);
-			eStep := eSERVER_STATE_LISTENER_OPEN_START;
-		END_IF	
+			END_IF
+		END_IF
 
 	eSERVER_STATE_LISTENER_OPEN_START:
 		fbSetPsk(bExecute:=FALSE);
 		IF NOT fbSetPsk.bBusy THEN
-			IF fbSetPsk.bError THEN 
+			IF NOT fbSetPsk.bError THEN
+				fbListen(bExecute:=FALSE, hListener:=fbCreate.hSocket);
+				fbListen(sSrvNetID:=sSrvNetID, bExecute:=TRUE, hListener:=fbCreate.hSocket, sLocalHost:=sLocalHost, nLocalPort:=nLocalPort);
+				eStep := eSERVER_STATE_LISTENER_OPEN_WAIT;
+			ELSE
+				fbLog.Error( sMessage := 'FB_TlsSocketSetPsk()', nErrId := fbSetPsk.nErrId);
 				eStep := eSERVER_STATE_ERROR;
 			END_IF
-			fbListen(bExecute:=FALSE, hListener:=hSocketListener);				
-			fbListen(bExecute:=TRUE, hListener:=hSocketListener, sLocalHost := sLocalHost, nLocalPort := nLocalPort);
-			eStep := eSERVER_STATE_LISTENER_OPEN_WAIT;
 		END_IF
 
 	eSERVER_STATE_LISTENER_OPEN_WAIT:
-		fbListen( bExecute := FALSE, hListener:=hSocketListener );
+		fbListen(bExecute:=FALSE, hListener:=fbCreate.hSocket);
 		IF NOT fbListen.bBusy THEN
 			IF NOT fbListen.bError THEN
-				bListening 	:= TRUE;
-				fbLog.Message( sMessage := 'Listener socket opened!', hSocket := hSocketListener );
+				bListening := TRUE;
+				fbLog.Message( sMessage := 'Listener socket opened!', hSocket := fbCreate.hSocket);
 				eStep := eSERVER_STATE_IDLE;
 			ELSE
-				fbLog.Error( sMessage := 'FB_SocketListen()', nErrId := fbListen.nErrId );
+				fbLog.Error( sMessage := 'FB_TlsSocketListen()', nErrId := fbListen.nErrId );
 				eStep := eSERVER_STATE_ERROR;
 			END_IF
 		END_IF
@@ -108,10 +115,10 @@ END_VAR
 
 		FOR i:= 1 TO MAX_CLIENT_CONNECTIONS DO
 			aConnections[i]( fbTx := aTx[i], fbRx := aRx[i], fbLog := aLog[i],
-							hListener := hSocketListener, bReset := bReset,
-							sSrvNetID := sSrvNetID, bEnable := bEnable,	bLog := bLog ); 
+							hListener := fbCreate.hSocket, bReset := bReset,
+							sSrvNetID := sSrvNetID, bEnable := bEnable,	bLog := bLog );
 			IF bReset THEN
-				bReset := FALSE; 
+				bReset := FALSE;
 				eStep := eSERVER_STATE_REMOTE_CLIENTS_CLOSE;
 				EXIT;
 			END_IF
@@ -128,8 +135,8 @@ END_VAR
 		FOR i:= 1 TO MAX_CLIENT_CONNECTIONS DO
 			(* Close all remote client (accepted) sockets *)
 			aConnections[i]( fbTx := aTx[i], fbRx := aRx[i], fbLog := aLog[i],
-							hListener := hSocketListener, bReset := bReset,
-							sSrvNetID := sSrvNetID, bEnable := FALSE, bLog := bLog ); 
+							hListener := fbCreate.hSocket, bReset := bReset,
+							sSrvNetID := sSrvNetID, bEnable := FALSE, bLog := bLog );
 			IF aConnections[i].bAccepted THEN
 				nAccepted := nAccepted + 1;(* Count the number of connected remote clients *)
 			END_IF
@@ -141,9 +148,9 @@ END_VAR
 		END_IF
 
 	eSERVER_STATE_LISTENER_CLOSE_START:
-		fbLog.Message( sMessage := 'Closing listener socket!', hSocket := hSocketListener );
-		fbClose( bExecute := FALSE );
-		fbClose( sSrvNetID := sSrvNetID, hSocket := hSocketListener, bExecute:= TRUE );
+		fbLog.Message( sMessage := 'Closing listener socket!', hSocket := fbCreate.hSocket);
+		fbClose(bExecute:=FALSE);
+		fbClose(sSrvNetID:=sSrvNetID, hSocket:=fbCreate.hSocket, bExecute:=TRUE);
 		eStep := eSERVER_STATE_LISTENER_CLOSE_WAIT;
 
 	eSERVER_STATE_LISTENER_CLOSE_WAIT:
@@ -175,23 +182,5 @@ END_CASE
 
 ]]></ST>
     </Implementation>
-    <LineIds Name="FB_Server">
-      <LineId Id="3" Count="9" />
-      <LineId Id="234" Count="0" />
-      <LineId Id="13" Count="11" />
-      <LineId Id="153" Count="1" />
-      <LineId Id="156" Count="3" />
-      <LineId Id="161" Count="0" />
-      <LineId Id="163" Count="0" />
-      <LineId Id="165" Count="1" />
-      <LineId Id="155" Count="0" />
-      <LineId Id="25" Count="1" />
-      <LineId Id="176" Count="0" />
-      <LineId Id="182" Count="2" />
-      <LineId Id="186" Count="3" />
-      <LineId Id="179" Count="0" />
-      <LineId Id="33" Count="84" />
-      <LineId Id="2" Count="0" />
-    </LineIds>
   </POU>
 </TcPlcObject>

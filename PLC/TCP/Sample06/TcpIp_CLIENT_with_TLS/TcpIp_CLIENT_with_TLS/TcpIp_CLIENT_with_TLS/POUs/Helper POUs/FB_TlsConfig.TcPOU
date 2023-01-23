@@ -1,0 +1,231 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1">
+  <POU Name="FB_TlsConfig" Id="{93e96eff-fdb4-46dc-acd8-f9caf2220236}" SpecialFunc="None">
+    <Declaration><![CDATA[(* TLS/PSK configuration *)
+{attribute 'no_explicit_call':='Direct call not allowed for type FB_TlsConfig'}
+{attribute 'no_assign'}
+FUNCTION_BLOCK FB_TlsConfig
+VAR
+	_pskKey       : ARRAY[0..TCPADS_TLS_MAX_PSK_KEY_SIZE] OF BYTE;
+	_pskKeyLen    : UDINT:=0;
+	_sIdentity    : STRING(TCPADS_TLS_PSK_IDENTITY_SIZE);
+	_sCaPath      : STRING(TCPADS_TLS_CERTIFICATE_PATH_SIZE);
+	_sCrlPath     : STRING(TCPADS_TLS_CERTIFICATE_PATH_SIZE);
+	_sCertPath    : STRING(TCPADS_TLS_CERTIFICATE_PATH_SIZE);
+	_sKeyPath     : STRING(TCPADS_TLS_CERTIFICATE_PATH_SIZE);
+	_sKeyPwd      : STRING(TCPADS_TLS_KEY_PASSWORD_SIZE);
+	_listenFlags  : ST_TlsListenFlags:=DEFAULT_TLSLISTENFLAGS;
+	_connectFlags : ST_TlsConnectFlags:=DEFAULT_TLSCONNECTFLAGS;
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[]]></ST>
+    </Implementation>
+    <Method Name="AddCa" Id="{1961e798-3f87-47ac-96f6-547d20f17058}">
+      <Declaration><![CDATA[(* Adds CA certificate path *)
+METHOD FINAL AddCa
+VAR_INPUT
+	sCaPath : STRING(TCPADS_TLS_CERTIFICATE_PATH_SIZE);
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[_sCaPath:=sCaPath;]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="AddCert" Id="{a02414a8-af73-46aa-b7f1-9ddd84dd131d}">
+      <Declaration><![CDATA[(* Adds certificate path *)
+METHOD FINAL AddCert
+VAR_INPUT
+	sCertPath: STRING(TCPADS_TLS_CERTIFICATE_PATH_SIZE);
+	sKeyPath: STRING(TCPADS_TLS_CERTIFICATE_PATH_SIZE);
+	sKeyPwd: STRING(TCPADS_TLS_KEY_PASSWORD_SIZE);
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[_sCertPath:=sCertPath;
+_sKeyPath:=sKeyPath;
+_sKeyPwd:=sKeyPwd;]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="AddConnectFlags" Id="{0ecfc7d8-b506-42b2-b1a2-18fbf7003f77}">
+      <Declaration><![CDATA[METHOD FINAL AddConnectFlags
+VAR_INPUT
+	flags : ST_TlsConnectFlags;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[_connectFlags:=flags;]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="AddCrl" Id="{53ba7074-e1c8-411c-8d89-9cb56fdeedc1}">
+      <Declaration><![CDATA[(* Adds certificate revocation list path *)
+METHOD FINAL AddCrl
+VAR_INPUT
+	sCrlPath : STRING(TCPADS_TLS_CERTIFICATE_PATH_SIZE);
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[_sCrlPath:=sCrlPath;]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="AddListenFlags" Id="{e5a3d6e3-5e7e-4bb0-9ba5-8145ae2ea7b0}">
+      <Declaration><![CDATA[METHOD FINAL AddListenFlags
+VAR_INPUT
+	flags : ST_TlsListenFlags;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[_listenFlags:=flags;]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="AddPsk" Id="{fe01aa1a-6244-4223-a587-9e1014330cc9}">
+      <Declaration><![CDATA[(* Adds PSK and PSK identity *)
+METHOD FINAL AddPsk
+VAR_IN_OUT
+	key : ARRAY[*] OF BYTE;
+END_VAR
+VAR_INPUT
+	sIdentity : STRING(TCPADS_TLS_PSK_IDENTITY_SIZE);
+END_VAR]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[_pskKeyLen:=MIN(DINT_TO_UDINT(UPPER_BOUND(key, 1) - LOWER_BOUND(key, 1) + 1), TCPADS_TLS_MAX_PSK_KEY_SIZE, SIZEOF(_pskKey));
+MEMCPY(ADR(_pskKey[0]), ADR(key[LOWER_BOUND(key, 1)]), _pskKeyLen);
+_sIdentity:=sIdentity;]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="Clear" Id="{b03107d9-5004-4d9e-a30c-c180f2a31e61}">
+      <Declaration><![CDATA[METHOD FINAL Clear
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[_sIdentity:='';
+_pskKeyLen:=0;
+MEMSET(ADR(_pskKey[0]), 0, SIZEOF(_pskKey));
+_sCaPath:='';
+_sCertPath:='';
+_sKeyPath:='';
+_sKeyPwd:='';
+_sCrlPath:='';
+_listenFlags:=DEFAULT_TLSLISTENFLAGS;
+_connectFlags:=DEFAULT_TLSCONNECTFLAGS;]]></ST>
+      </Implementation>
+    </Method>
+    <Property Name="connectFlags" Id="{8c8dd301-8861-4876-8fd2-4f2e756d91d5}">
+      <Declaration><![CDATA[PROPERTY FINAL connectFlags : ST_TlsConnectFlags]]></Declaration>
+      <Get Name="Get" Id="{a1b970a4-7622-416e-8940-f3aab3e82f4c}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[connectFlags:=_connectFlags;]]></ST>
+        </Implementation>
+      </Get>
+    </Property>
+    <Property Name="listenFlags" Id="{a625f6c6-3762-4ade-a6a8-4457726e56ed}">
+      <Declaration><![CDATA[PROPERTY FINAL listenFlags : ST_TlsListenFlags]]></Declaration>
+      <Get Name="Get" Id="{ad9cd4a1-95ef-442b-b395-d79ba11aa2ee}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[listenFlags:=_listenFlags;]]></ST>
+        </Implementation>
+      </Get>
+    </Property>
+    <Property Name="pskKey" Id="{e3ea9e26-aa80-47bc-8a69-329a2a57f84c}">
+      <Declaration><![CDATA[(* Pointer to first PSK key byte *)
+PROPERTY FINAL pskKey : PVOID]]></Declaration>
+      <Get Name="Get" Id="{d81c707f-5605-499f-bd67-943e24e1cd18}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[pskKey:=SEL(_pskKeyLen = 0, ADR(_pskKey[0]), 0);]]></ST>
+        </Implementation>
+      </Get>
+    </Property>
+    <Property Name="pskKeyLen" Id="{3c3b4625-a194-4b92-8df5-1fe2ff9d9882}">
+      <Declaration><![CDATA[(* Byte size of PSK key *)
+PROPERTY FINAL pskKeyLen : UDINT(0..TCPADS_TLS_MAX_PSK_KEY_SIZE)]]></Declaration>
+      <Get Name="Get" Id="{002ec0d2-217b-4c08-ba6e-13497e3cb68c}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[pskKeyLen:=_pskKeyLen;]]></ST>
+        </Implementation>
+      </Get>
+    </Property>
+    <Property Name="sCaPath" Id="{d0808b44-c122-4a24-b79a-e479e00e92ed}">
+      <Declaration><![CDATA[(* CA certificate path *)
+PROPERTY FINAL sCaPath : STRING(TCPADS_TLS_CERTIFICATE_PATH_SIZE)]]></Declaration>
+      <Get Name="Get" Id="{5b540fb9-1611-483e-9e05-4cb935597a25}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[sCaPath:=_sCaPath;]]></ST>
+        </Implementation>
+      </Get>
+    </Property>
+    <Property Name="sCertPath" Id="{a34d6a2e-8ecd-4758-8991-07fd960798ea}">
+      <Declaration><![CDATA[(* Certificate path *)
+PROPERTY FINAL sCertPath : STRING(TCPADS_TLS_CERTIFICATE_PATH_SIZE)]]></Declaration>
+      <Get Name="Get" Id="{b1b28fe8-aadf-4756-979e-be4cff5db0f1}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[sCertPath:=_sCertPath;]]></ST>
+        </Implementation>
+      </Get>
+    </Property>
+    <Property Name="sCrlPath" Id="{93714f42-87b4-4cf0-8647-a68ad64c7083}">
+      <Declaration><![CDATA[(* Certificate revocation list path *)
+PROPERTY FINAL sCrlPath : STRING(TCPADS_TLS_CERTIFICATE_PATH_SIZE)]]></Declaration>
+      <Get Name="Get" Id="{96f75915-94d0-461f-9ca1-963bf86812e4}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[sCrlPath:=_sCrlPath;]]></ST>
+        </Implementation>
+      </Get>
+    </Property>
+    <Property Name="sIdentity" Id="{6de5b960-ba34-4e5d-bbd3-b9df137e3c8e}">
+      <Declaration><![CDATA[(* PSK key identity *)
+PROPERTY FINAL sIdentity : STRING(TCPADS_TLS_PSK_IDENTITY_SIZE)]]></Declaration>
+      <Get Name="Get" Id="{446878f3-d332-4b9b-aa63-05ba5664c0b9}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[sIdentity:=_sIdentity;]]></ST>
+        </Implementation>
+      </Get>
+    </Property>
+    <Property Name="sKeyPath" Id="{31e05108-ffd0-47bf-8fc1-dac58ea05be4}">
+      <Declaration><![CDATA[(* Certificate key path *)
+PROPERTY FINAL sKeyPath : STRING(TCPADS_TLS_CERTIFICATE_PATH_SIZE)]]></Declaration>
+      <Get Name="Get" Id="{d3b3daa3-f1c8-44c4-af02-2d5229ec4be6}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[sKeyPath:=_sKeyPath;]]></ST>
+        </Implementation>
+      </Get>
+    </Property>
+    <Property Name="sKeyPwd" Id="{fb7ad24f-2a13-4ab3-93ef-c770f12fc9fb}">
+      <Declaration><![CDATA[(* Certificate key password *)
+PROPERTY FINAL sKeyPwd : STRING(TCPADS_TLS_KEY_PASSWORD_SIZE)]]></Declaration>
+      <Get Name="Get" Id="{cc53f680-3374-480e-b94b-3271d20a6a81}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[sKeyPwd:=_sKeyPwd;]]></ST>
+        </Implementation>
+      </Get>
+    </Property>
+  </POU>
+</TcPlcObject>

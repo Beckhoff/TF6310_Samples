@@ -1,29 +1,32 @@
-﻿<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.0.23">
-  <POU Name="FB_LogFifo" Id="{cf9e956c-1b38-487d-9fc5-7a973b1bb83f}">
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1">
+  <POU Name="FB_LogFifo" Id="{cf9e956c-1b38-487d-9fc5-7a973b1bb83f}" SpecialFunc="None">
     <Declaration><![CDATA[(* Log/debug/error message fifo *)
+{attribute 'no_explicit_call':='Direct call not allowed for type FB_LogFifo'}
+{attribute 'no_assign'}
 FUNCTION_BLOCK FB_LogFifo
 VAR_INPUT
-	bLog		: BOOL 		:= FALSE;(* TRUE => Enable log message output, FALSE => Disable *)
-	sPrefix		: STRING 	:= 'Unknown::';(* Log message description string (allows the identification of log message source) *)
+	bLog     : BOOL        := FALSE;(* TRUE => Enable log message output, FALSE => Disable *)
+	sPrefix  : STRING      := 'Unknown::';(* Log message description string (allows the identification of log message source) *)
 	
-	sMessage	: STRING 	:= '';(* String message to add (write) to the fifo *)
-	nErrID		: UDINT 	:= 0;(* Error code to add (write) to the fifo *)
-	hSocket		: T_HSOCKET;(* Socket connection handle *)
+	sMessage : STRING      := '';(* String message to add (write) to the fifo *)
+	nErrID   : UDINT       := 0;(* Error code to add (write) to the fifo *)
+	hSocket  : T_HSOCKET;(* Socket connection handle *)
 END_VAR
 VAR_OUTPUT
-	bOk			: BOOL;(* TRUE = New entry added or removed succesfully, FALSE = Fifo overflow or fifo empty *)
-	sGet		: T_MaxString := '';(* String entry removed (read) from fifo *)
-	nCount		: UDINT := 0;(* Number of fifo entries *)
+	bOk      : BOOL;(* TRUE = New entry added or removed succesfully, FALSE = Fifo overflow or fifo empty *)
+	sGet     : T_MaxString := '';(* String entry removed (read) from fifo *)
+	nCount   : UDINT       := 0;(* Number of fifo entries *)
 END_VAR
 VAR
-	fbBuffer 	: FB_StringRingBuffer;(* Basic (lower level) string buffer control function block *)
-	buffer		: ARRAY[0..PLCPRJ_BUFFER_SIZE] OF BYTE;(* Internal buffer memory *)
-	sSource		: T_MaxString;	
-	sPut		: T_MaxString;
+	fbBuffer : FB_StringRingBuffer;(* Basic (lower level) string buffer control function block *)
+	buffer   : ARRAY[0..PLCPRJ_BUFFER_SIZE] OF BYTE;(* Internal buffer memory *)
+	sSource  : T_MaxString;
+	sPut     : T_MaxString;
 END_VAR
 ]]></Declaration>
     <Implementation>
-      <ST><![CDATA[;]]></ST>
+      <ST><![CDATA[]]></ST>
     </Implementation>
     <Action Name="Clear" Id="{02270425-d2ec-45e7-b278-aab16cb13ed5}">
       <Implementation>
@@ -72,6 +75,19 @@ IF bOk THEN
 END_IF]]></ST>
       </Implementation>
     </Action>
+    <Action Name="Message" Id="{a03e1481-d5bd-4918-9b4e-dc42575596f4}">
+      <Implementation>
+        <ST><![CDATA[(* Adds new fifo entry *)
+sPut := CONCAT( CONCAT( sPrefix, sMessage ), CONCAT( '::', HSOCKET_TO_STRING(hSocket) ) );
+fbBuffer.A_AddTail( pBuffer:= ADR(buffer), cbBuffer:= SIZEOF(buffer),
+					putValue:= sPut, bOk=>bOk, nCount=>nCount );
+IF bOk THEN
+	IF bLog THEN(* Log information message *)
+		ADSLOGSTR( ADSLOG_MSGTYPE_HINT OR ADSLOG_MSGTYPE_LOG, '%s', sPut );	
+	END_IF
+END_IF]]></ST>
+      </Implementation>
+    </Action>
     <Action Name="Remove" Id="{6bbf46bc-351d-4dcc-91d2-dbfbc016f526}">
       <Implementation>
         <ST><![CDATA[(* Removes oldest fifo entry *)
@@ -86,19 +102,5 @@ fbBuffer.A_RemoveHead( pBuffer:= ADR(buffer), cbBuffer:= SIZEOF(buffer),
 ]]></ST>
       </Implementation>
     </Action>
-    <Action Name="Message" Id="{a03e1481-d5bd-4918-9b4e-dc42575596f4}">
-      <Implementation>
-        <ST><![CDATA[(* Adds new fifo entry *)
-sPut := CONCAT( CONCAT( sPrefix, sMessage ), CONCAT( '::', HSOCKET_TO_STRING(hSocket) ) );
-fbBuffer.A_AddTail( pBuffer:= ADR(buffer), cbBuffer:= SIZEOF(buffer),
-					putValue:= sPut, bOk=>bOk, nCount=>nCount );
-IF bOk THEN
-	IF bLog THEN(* Log information message *)
-		ADSLOGSTR( ADSLOG_MSGTYPE_HINT OR ADSLOG_MSGTYPE_LOG, '%s', sPut );	
-	END_IF
-END_IF]]></ST>
-      </Implementation>
-    </Action>
-    <ObjectProperties />
   </POU>
 </TcPlcObject>

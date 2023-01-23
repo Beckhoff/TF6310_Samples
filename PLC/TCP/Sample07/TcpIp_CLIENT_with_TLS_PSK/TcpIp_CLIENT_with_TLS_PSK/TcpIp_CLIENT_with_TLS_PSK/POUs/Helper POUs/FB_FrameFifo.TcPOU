@@ -1,24 +1,27 @@
-﻿<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.0.23">
-  <POU Name="FB_FrameFifo" Id="{b6bfa284-76f0-46f7-b8d6-91dbea9da8f5}">
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1">
+  <POU Name="FB_FrameFifo" Id="{b6bfa284-76f0-46f7-b8d6-91dbea9da8f5}" SpecialFunc="None">
     <Declaration><![CDATA[(* Tx/Rx (string data) fifo control function block *)
+{attribute 'no_explicit_call':='Direct call not allowed for type FB_FrameFifo'}
+{attribute 'no_assign'}
 FUNCTION_BLOCK FB_FrameFifo
 VAR_INPUT
-	bLog		: BOOL			:= FALSE;(* TRUE => Enable log message output, FALSE => Disable *)
-	sPrefix		: STRING		:= 'Unknown::';(* Log message description string (allows the identification of log message source) *)
-	sPut		: T_MaxString 	:= ''; (* String message to add (write) to the fifo *)
+	bLog     : BOOL        := FALSE;(* TRUE => Enable log message output, FALSE => Disable *)
+	sPrefix  : STRING      := 'Unknown::';(* Log message description string (allows the identification of log message source) *)
+	sPut     : T_MaxString := ''; (* String message to add (write) to the fifo *)
 END_VAR
 VAR_OUTPUT
-	bOk			: BOOL; 	 	(* TRUE = New entry added or removed succesfully, FALSE = Fifo overflow or fifo empty *)
-	sGet		: T_MaxString 	:= '';(* String message removed (read) from fifo *)
-	nCount		: UDINT			:= 0;(* Number of fifo entries *)
-	cbFree		: UDINT 		:= 0;(* Free buffer space *)
+	bOk      : BOOL;(* TRUE = New entry added or removed succesfully, FALSE = Fifo overflow or fifo empty *)
+	sGet     : T_MaxString := '';(* String message removed (read) from fifo *)
+	nCount   : UDINT       := 0;(* Number of fifo entries *)
+	cbFree   : UDINT       := 0;(* Free buffer space *)
 END_VAR
 VAR
-	fbBuffer 	: FB_StringRingBuffer := (bOverwrite := FALSE);(* Basic (lower level) string buffer control function block *)
-	buffer		: ARRAY[-3..PLCPRJ_BUFFER_SIZE] OF BYTE;(* Internal buffer memory *)
+	fbBuffer : FB_StringRingBuffer := (bOverwrite := FALSE);(* Basic (lower level) string buffer control function block *)
+	buffer   : ARRAY[-3..PLCPRJ_BUFFER_SIZE] OF BYTE;(* Internal buffer memory *)
 END_VAR]]></Declaration>
     <Implementation>
-      <ST><![CDATA[;]]></ST>
+      <ST><![CDATA[]]></ST>
     </Implementation>
     <Action Name="AddTail" Id="{abfceafb-a8be-4d53-8e9c-7963c0567216}">
       <Implementation>
@@ -51,6 +54,5 @@ IF bOk THEN
 END_IF]]></ST>
       </Implementation>
     </Action>
-    <ObjectProperties />
   </POU>
 </TcPlcObject>
