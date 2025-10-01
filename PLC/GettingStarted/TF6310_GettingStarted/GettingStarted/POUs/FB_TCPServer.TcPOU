@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.6">
+<TcPlcObject Version="1.1.0.1">
   <POU Name="FB_TCPServer" Id="{eaed78c2-34d1-42b7-98f4-b58fa196fe7c}" SpecialFunc="None">
     <Declaration><![CDATA[FUNCTION_BLOCK FB_TCPServer
 VAR_INPUT
@@ -117,7 +117,7 @@ END_VAR
 	fbSocketSend(																// Send Data to client
 		sSrvNetId:= '', 
 		hSocket:= hSocket, 
-		cbLen:= SIZEOF(sSendData), 
+		cbLen:= LEN2(ADR(sSendData)), 
 		pSrc:= ADR(sSendData),
 		bExecute:= TRUE, 
 		tTimeout:= T#3S, 
