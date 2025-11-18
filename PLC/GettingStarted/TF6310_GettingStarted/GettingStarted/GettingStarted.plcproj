@@ -6,7 +6,7 @@
     <ProjectGuid>{2accec7f-e7b8-409a-8cfb-bcfeb544fa02}</ProjectGuid>
     <SubObjectsSortedByName>True</SubObjectsSortedByName>
     <Name>GettingStarted</Name>
-    <ProgramVersion>3.1.4022.7</ProgramVersion>
+    <ProgramVersion>3.1.4026.19</ProgramVersion>
     <Application>{0c2005d7-4674-4e90-b52e-6e45f877bf95}</Application>
     <TypeSystem>{0baae6b2-0ba2-47ae-a6c0-333c1ceb2b82}</TypeSystem>
     <Implicit_Task_Info>{102a994f-0853-4d18-a58b-5b72ef4fd3fc}</Implicit_Task_Info>
@@ -46,6 +46,10 @@
     <PlaceholderReference Include="Tc2_TcpIp">
       <DefaultResolution>Tc2_TcpIp, * (Beckhoff Automation GmbH)</DefaultResolution>
       <Namespace>Tc2_TcpIp</Namespace>
+    </PlaceholderReference>
+    <PlaceholderReference Include="Tc2_Utilities">
+      <DefaultResolution>Tc2_Utilities, * (Beckhoff Automation GmbH)</DefaultResolution>
+      <Namespace>Tc2_Utilities</Namespace>
     </PlaceholderReference>
     <PlaceholderReference Include="Tc3_Module">
       <DefaultResolution>Tc3_Module, * (Beckhoff Automation GmbH)</DefaultResolution>

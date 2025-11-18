@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.6">
+<TcPlcObject Version="1.1.0.1">
   <POU Name="MAIN" Id="{572507de-a44a-4a7e-b7eb-52f2373576ea}" SpecialFunc="None">
     <Declaration><![CDATA[PROGRAM MAIN
 VAR
@@ -11,7 +11,7 @@ VAR
 	fbTcpClient1					: FB_TCPClient;
 		sClient1SendData			: STRING(255);
 		nServer1Port				: UDINT 				:= 12000;
-		sServer1Host				: T_IPv4Addr 			:= '';
+		sServer1Host				: T_IPv4Addr 			:= '127.0.0.1';
 		bStartClient1Communication	: BOOL 					:= TRUE;
 		tClient1CycleTime			: TIME 					:= T#0.5S;
 		bClient1SendTrigger			: BOOL;
@@ -59,7 +59,7 @@ ELSE
 	
 	fbTcpClient1(
 		nRemotePort:= nServer1Port, 								// Server port
-		sRemoteHost:= sServer1Host, 								// Server IP (empty for local communication)
+		sRemoteHost:= sServer1Host, 								// Server IP (127.0.0.1 for local communication)
 		bStartCommunication:= bStartClient1Communication, 			// Start communication, when FALSE, connection is closed
 		sSendData:= sClient1SendData, 								// Data that are sent to the server
 		tCycleTimeSend:= (*tClient1CycleTime*), 					// TimeInterval for cyclic sending
@@ -82,7 +82,7 @@ ELSE
 	END_IF 
 		
 	fbTcpEchoServer1(
-		sLocalHost:= '', 											// Server IP Adress
+		sLocalHost:= '0.0.0.0',										// Server IP address to listen on, 0.0.0.0 for listening on all network adapters
 		nLocalPort:= nServer1Port, 									// Server port
 		bStartCommunication:= bStartServer1Communication, 			// Allow Client-connection or close connection
 		bConnected => bServer1Connected,							// Client connection is valid
@@ -94,7 +94,7 @@ ELSE
 	// Optional second Client and Server
 	
 (*	fbTcpClient2(
-		sRemoteHost:= '', 
+		sRemoteHost:= '127.0.0.1', 
 		nRemotePort:= 12001, 
 		sSendData:= sClient2SendData, 
 		bStartCommunication:= TRUE, 
@@ -107,7 +107,7 @@ ELSE
 		bBusy=> );
 		
 	fbTcpServer2(
-		sLocalHost:= '', 
+		sLocalHost:= '0.0.0.0', 
 		nLocalPort:= 12001, 
 		bStartCommunication:= TRUE, 
 		sSendData => sServer2Data, 

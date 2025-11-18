@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<TcSmProject xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://www.beckhoff.com/schemas/2012/07/TcSmProject" TcSmVersion="1.0" TcVersion="3.1.4024.10">
+<TcSmProject xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://www.beckhoff.com/schemas/2012/07/TcSmProject" TcSmVersion="1.0" TcVersion="3.1.4026.19">
 	<Project ProjectGUID="{E67EA805-5207-4E76-8736-1D8C090F5379}" Target64Bit="true" ShowHideConfigurations="#x106">
 		<System>
 			<Licenses>
@@ -15,12 +15,12 @@
 		</System>
 		<Plc>
 			<Project GUID="{2ACCEC7F-E7B8-409A-8CFB-BCFEB544FA02}" Name="GettingStarted" PrjFilePath="GettingStarted\GettingStarted.plcproj" TmcFilePath="GettingStarted\GettingStarted.tmc" ReloadTmc="true" AmsPort="851" FileArchiveSettings="#x000e" SymbolicMapping="true">
-				<Instance Id="#x08502000" TcSmClass="TComPlcObjDef" KeepUnrestoredLinks="2" TmcPath="GettingStarted\GettingStarted.tmc">
+				<Instance Id="#x08502000" TcSmClass="TComPlcObjDef" KeepUnrestoredLinks="2" TmcHash="{657632EF-C659-28F8-3353-EE96F93E291B}" TmcPath="GettingStarted\GettingStarted.tmc">
 					<Name>GettingStarted Instance</Name>
 					<CLSID ClassFactory="TcPlc30">{08500001-0000-0000-F000-000000000064}</CLSID>
 					<Contexts>
 						<Context>
-							<Id NeedCalleeCall="true">0</Id>
+							<Id>0</Id>
 							<Name>PlcTask</Name>
 							<ManualConfig>
 								<OTCID>#x02010030</OTCID>
