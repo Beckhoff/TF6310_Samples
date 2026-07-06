@@ -1,0 +1,40 @@
+networks:
+  container-network:
+    name: container-network
+    ipam:
+      driver: default
+      config:
+        - subnet: 192.168.20.0/24
+          gateway: 192.168.20.1
+
+services:
+  mosquitto:
+    image: eclipse-mosquitto:latest
+    container_name: mosquitto
+    hostname: mosquitto
+    ports:
+      - "1883:1883"
+    restart: unless-stopped
+    volumes:
+      - ./simple-mosquitto.conf:/mosquitto/config/mosquitto.conf:ro
+    networks:
+      container-network:
+        ipv4_address: 192.168.20.2
+
+  tc31-tcp-ip:
+    image: tc31-tcp-ip:latest
+    container_name: tc31-tcp-ip
+    hostname: tc31-tcp-ip
+    restart: unless-stopped
+    depends_on:
+      - mosquitto
+    ports:
+      - "12000:12000"
+    privileged: true
+    volumes:
+      - /dev/hugepages:/dev/hugepages:rw
+    networks:
+      container-network:
+        ipv4_address: 192.168.20.3
+    environment:
+      - AMS_NETID=15.15.15.15.1.1

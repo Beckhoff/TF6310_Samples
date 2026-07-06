@@ -1,0 +1,70 @@
+﻿<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.0.23">
+  <POU Name="FB_ClientApplication" Id="{e8aa5895-0a6f-4217-b316-2acfb70026a2}">
+    <Declaration><![CDATA[(* Sample client application. Adapt this code to match your needs. *)
+FUNCTION_BLOCK FB_ClientApplication
+VAR_IN_OUT
+	fbTx 			: FB_FrameFifo;(* TX fifo *)
+	fbRx 			: FB_FrameFifo;(* RX fifo *)
+	fbLog			: FB_LogFifo;(* Log message fifo *)
+END_VAR
+VAR
+	stToServer		: ST_ApplicationBinaryData; (* Tx user data *)
+	stFromServer	: ST_ApplicationBinaryData; (* Rx user data *)
+	sLogMessage 	: T_MaxString := '';(* Log/debug/error message *)
+
+	fbClock			: FB_LocalSystemTime := ( bEnable := TRUE );(* OS clock *)
+	fbSndTimer		: TON;(* Cyclic (send) timer *)
+END_VAR]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[(* Refresh clock time *)
+fbClock();
+IF NOT fbClock.bValid THEN
+	RETURN;
+END_IF
+
+(*--------------------- Send tx data ------------------------------------------- *)
+fbSndTimer( IN := TRUE, PT := PLCPRJ_CLIENT_SEND_CYCLE_TIME );
+IF fbSndTimer.Q THEN
+	fbSndTimer( IN := FALSE );
+
+	(* Simulate user data *)
+	stToServer.dtTimeStamp 	:= SYSTEMTIME_TO_DT( fbClock.systemTime );
+	stToServer.fPos 		:= stToServer.fPos + 0.1;
+	stToServer.nVelo 		:= stToServer.nVelo + 1;
+	stToServer.sMsg 		:= 'Hello world from client!';
+	stToServer.arr[0] 		:= stToServer.arr[0] + 1;
+
+	fbTx.AddTail( stPut := stToServer );(* Put user data to the tx fifo *)
+	IF NOT fbTx.bOk THEN(* Fifo overflow => Log error *)
+		fbLog.Error( sMessage := 'FB_FrameFifo(sender)', nErrID := PLCPRJ_ERROR_SENDFIFO_OVERFLOW );
+	END_IF
+END_IF
+
+(*------------------------ Fetch rx data -------------------------------------- *)
+REPEAT
+	fbRx.RemoveHead( );(* fetch data from rx fifo *)
+	IF fbRx.bOk THEN(* success *)
+
+		(* TODO: Implement receive handler *)
+		stFromServer := fbRx.stGet; 
+
+	END_IF
+UNTIL NOT fbRx.bOk
+END_REPEAT
+
+(*---------------------- Get log/error messages from log fifo ------------------*)
+REPEAT
+	fbLog.Remove( );
+	IF fbLog.bOk THEN
+
+		(* TODO: Implement log message handler *)
+		sLogMessage := fbLog.sGet;
+
+	END_IF
+UNTIL NOT fbLog.bOk
+END_REPEAT
+]]></ST>
+    </Implementation>
+    <ObjectProperties />
+  </POU>
+</TcPlcObject>

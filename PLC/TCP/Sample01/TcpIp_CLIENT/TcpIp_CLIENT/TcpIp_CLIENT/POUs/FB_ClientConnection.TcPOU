@@ -1,0 +1,229 @@
+﻿<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.0.23">
+  <POU Name="FB_ClientConnection" Id="{a6c2c808-6e8b-4998-a86b-c39b02d74fa3}">
+    <Declaration><![CDATA[FUNCTION_BLOCK FB_ClientConnection
+VAR_IN_OUT
+	fbTx 			: FB_FrameFifo;(* TX fifo *)
+	fbRx 			: FB_FrameFifo;(* RX fifo *)
+	fbLog			: FB_LogFifo;(* Log message fifo *)
+END_VAR
+VAR_INPUT
+	sSrvNetID		: T_AmsNetID 	:= '';(* TwinCAT TCP/IP server network address *)
+	sRemoteHost		: T_IPv4Addr 	:= '127.0.0.1';(* IP adress of remote server *)
+	nRemotePort		: UDINT 		:= 0;(* Server port number *)
+	bEnable			: BOOL 			:= FALSE;(* TRUE => connect and exchange data, FALSE => disconnect *)
+	tReconnect 		: TIME 			:= T#45S;(* Try to reconnect after this time *)
+	bLog			: BOOL 			:= FALSE;(* TRUE => Enable log message output, FALSE => Disable *)
+	sPrefix			: STRING 		:= 'CLIENT::';(* Log message description string (allows the identification of log message source) *)
+END_VAR
+VAR_OUTPUT
+	bConnected		: BOOL 			:= FALSE;(* Established connection status *)
+END_VAR
+VAR
+	fbConnect 		: FB_SocketConnect;
+	fbClose			: FB_SocketClose;
+	fbSend			: FB_SocketSend;
+	fbReceive		: FB_SocketReceive;
+	eStep			: E_ConnectionSteps;
+	bSndBusy 		: BOOL;(* Tx state *)
+	bRcvBusy 		: BOOL;(* Rx state *)
+	bDisconnect		: BOOL;(* Disconnect flag, if set the socket will be closed *)
+	
+	fbPollTimer		: TON;(* Receive poll timer *)
+	fbResponseTimer : TON;(* Response timeout timer *)
+	fbReconnectTimer: TON;(* Reconnect timer *)
+	
+	rxBuffer		: ARRAY[0..PLCPRJ_BUFFER_SIZE] OF BYTE;
+	sTxFrame		: T_MaxString;
+	sRxFrame		: T_MaxString;
+	cbReceived		: UDINT;
+	nLenOfString	: UDINT;(* String length inclusive the null delimiter *)
+	bEndOfString	: BOOL := FALSE;
+END_VAR]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[CASE eStep OF
+	eCONNECTION_STATE_IDLE:
+		IF bEnable XOR bConnected THEN
+			IF bEnable THEN
+				fbReconnectTimer( IN := TRUE );
+				IF fbReconnectTimer.Q THEN
+
+					fbTx.Clear( sPrefix := CONCAT( sPrefix, 'FB_FrameFifo(sender)::' ), bLog := bLog );(* Clear send fifo *)
+					fbRx.Clear( sPrefix := CONCAT( sPrefix, 'FB_FrameFifo(receiver)::' ), bLog := bLog );(* Clear receiver fifo *)
+					fbLog.Clear( sPrefix := sPrefix, bLog := bLog );(* Clear log fifo *)
+					bSndBusy := FALSE;
+					bRcvBusy := FALSE;
+					bDisconnect := FALSE;
+					cbReceived := 0;
+
+					fbPollTimer( IN := FALSE, PT := T#0S );
+					fbResponseTimer( IN := FALSE, PT := PLCPRJ_RECEIVE_TIMEOUT );
+					fbReconnectTimer( IN := FALSE, PT := tReconnect );
+
+					eStep := eCONNECTION_STATE_CONNECT_START;
+				END_IF
+			ELSE
+				eStep := eCONNECTION_STATE_CLOSE_START;
+			END_IF
+		ELSIF bConnected THEN
+			eStep := eCONNECTION_STATE_DATAEXCHANGE;
+		ELSE
+			fbReconnectTimer( IN := FALSE, PT := T#0S );
+		END_IF
+
+	eCONNECTION_STATE_CONNECT_START:
+		fbConnect( bExecute := FALSE );
+		fbConnect( sSrvNetID := sSrvNetID, 
+					sRemoteHost := sRemoteHost, 
+					nRemotePort := nRemotePort, 
+					bExecute := TRUE );
+		eStep := eCONNECTION_STATE_CONNECT_WAIT;
+
+	eCONNECTION_STATE_CONNECT_WAIT:
+		fbConnect( bExecute := FALSE );
+		IF NOT fbConnect.bBusy THEN
+			IF NOT fbConnect.bError THEN
+				bConnected 	:= TRUE;
+				fbLog.Message( sMessage := 'Connection established!', hSocket := fbConnect.hSocket );
+				eStep := eCONNECTION_STATE_IDLE;
+			ELSE
+				fbLog.Error( sMessage := 'FB_SocketConnect()', nErrID := fbConnect.nErrId );
+				eStep := eCONNECTION_STATE_ERROR;
+			END_IF
+		END_IF
+
+	eCONNECTION_STATE_DATAEXCHANGE:
+
+		bDisconnect := NOT bEnable OR bDisconnect;(* User/internal disconnect requested? *)
+		IF bDisconnect AND NOT bSndBusy AND NOT bRcvBusy THEN
+			bDisconnect := FALSE;
+			eStep := eCONNECTION_STATE_CLOSE_START;(* Disconnect *)
+		ELSE
+	
+			(* Send tx data *)
+			IF NOT bDisconnect AND NOT bSndBusy THEN
+				fbTx.RemoveHead( sGet => sTxFrame );(* Remove oldest string entry s*)
+				IF fbTx.bOk THEN(* Success *)
+					fbSend( bExecute := FALSE );
+					fbSend(	sSrvNetID := sSrvNetID, hSocket	:= fbConnect.hSocket,
+							pSrc	:= ADR( sTxFrame ),
+							cbLen	:= INT_TO_UDINT(LEN( sTxFrame )) + 1,(* String length inclusive the zero delimiter *)
+							bExecute:= TRUE );
+					bSndBusy := TRUE;
+				END_IF
+			ELSE
+				fbSend( bExecute := FALSE );
+				IF NOT fbSend.bBusy THEN
+					bSndBusy := FALSE;
+					IF fbSend.bError THEN
+						fbLog.Error( sMessage := 'FB_SocketSend()', nErrId := fbSend.nErrId );
+						bDisconnect := TRUE;(* Set flag *)
+					END_IF
+				END_IF
+			END_IF
+
+			(* Get rx data *)
+			IF NOT bDisconnect AND NOT bRcvBusy THEN
+				fbPollTimer( IN := TRUE );
+				IF fbPollTimer.Q THEN
+					fbPollTimer( IN := FALSE, PT := PLCPRJ_RECEIVE_POLLING_TIME );
+					fbReceive( bExecute := FALSE );
+					fbReceive( 	sSrvNetID := sSrvNetID, 
+								hSocket	:= fbConnect.hSocket,
+								pDest	:= ADR( rxBuffer ) + cbReceived,
+								cbLen	:= SIZEOF( rxBuffer ) - cbReceived,
+								bExecute:= TRUE );
+					bRcvBusy := TRUE;
+				END_IF
+			ELSE
+				fbReceive( bExecute := FALSE );
+				IF NOT fbReceive.bBusy THEN
+					bRcvBusy := FALSE;
+					IF NOT fbReceive.bError THEN
+						IF (fbReceive.nRecBytes > 0) THEN(* Bytes received *)
+							
+							fbPollTimer( IN := FALSE, PT := T#0S ); (* Bytes received => increase the read (polling) speed *)
+							fbResponseTimer( IN := FALSE );(* Bytes received => disable timeout check *)
+							cbReceived 	:= cbReceived + fbReceive.nRecBytes;(* Calculate the number of received data bytes *)
+
+							REPEAT
+								
+								(* Search for string end delimiter *)
+								nLenOfString := 0;(* Reset string length *)
+								bEndOfString := FALSE;
+								REPEAT 
+									IF rxBuffer[nLenOfString] = 0 THEN(* String end delimiter found *)
+										bEndOfString := TRUE;
+									END_IF
+									nLenOfString := nLenOfString + 1;
+								UNTIL bEndOfString OR (nLenOfString >= cbReceived)
+								END_REPEAT
+								
+								IF bEndOfString THEN
+									MEMSET( ADR( sRxFrame ), 0, SIZEOF( sRxFrame ) );
+									MEMCPY(  ADR( sRxFrame ), ADR( rxBuffer ), MIN( SIZEOF(sRxFrame), nLenOfString ) );(* Copy the received string to the output variable (inclusive the end delimiter) *)
+									MEMMOVE( ADR( rxBuffer ), ADR( rxBuffer[nLenOfString] ), cbReceived - nLenOfString  );(* Move the reamaining data bytes *)
+									cbReceived := cbReceived - nLenOfString;(* Recalculate the reamaining data byte length *)
+			
+									fbRx.AddTail( sPut := sRxFrame );(* Put received message to the rx fifo *)
+									IF NOT fbRx.bOk THEN
+										fbLog.Error( sMessage := 'FB_FrameFifo(receiver)', nErrID := PLCPRJ_ERROR_RECFIFO_OVERFLOW );
+										bDisconnect := TRUE;(* Set flag *)
+										RETURN;
+									END_IF
+								END_IF
+								
+							UNTIL NOT bEndOfString OR (cbReceived = 0)
+							END_REPEAT
+		
+						ELSE(* No bytes received *)
+							fbResponseTimer( IN := TRUE, PT := PLCPRJ_RECEIVE_TIMEOUT );(* No bytes received => enable timeout check *)
+							IF fbResponseTimer.Q THEN (* Timeout error*)
+								fbResponseTimer( IN := FALSE );
+								fbLog.Error( sMessage := 'FB_SocketReceive()', nErrID := PLCPRJ_ERROR_RECEIVE_TIMEOUT );
+								bDisconnect := TRUE;(* Set flag *)
+							END_IF
+						END_IF
+						
+					ELSE(* Receive error *)
+						fbLog.Error( sMessage := 'FB_SocketReceive()', nErrId := fbReceive.nErrId );
+						bDisconnect := TRUE;(* Set flag *)
+					END_IF
+				END_IF(* IF NOT fbReceive.bBusy THEN *)
+				
+			END_IF(* IF NOT bDisconnect AND NOT bRcvBusy THEN *)
+		
+		END_IF(* IF bDisconnect AND NOT bSndBusy AND NOT bRcvBusy THEN *)
+
+		
+	eCONNECTION_STATE_CLOSE_START:
+		fbLog.Message( sMessage := 'Closing connection!', hSocket := fbConnect.hSocket );
+		fbClose( bExecute := FALSE );
+		fbClose( sSrvNetID := sSrvNetID, 
+					hSocket:= fbConnect.hSocket, 
+					bExecute:= TRUE );
+		eStep := eCONNECTION_STATE_CLOSE_WAIT;
+
+	eCONNECTION_STATE_CLOSE_WAIT:
+		fbClose( bExecute := FALSE );
+		IF NOT fbClose.bBusy THEN
+			bConnected := FALSE;
+			IF NOT fbClose.bError THEN
+				eStep := eCONNECTION_STATE_IDLE;
+			ELSE
+				fbLog.Error( sMessage := 'FB_SocketClose()', nErrID := fbClose.nErrId );
+				eStep := eCONNECTION_STATE_ERROR;
+			END_IF
+		END_IF
+
+	eCONNECTION_STATE_ERROR:(* Error step *)
+		IF bConnected THEN
+			eStep := eCONNECTION_STATE_CLOSE_START;
+		ELSE
+			eStep := eCONNECTION_STATE_IDLE;
+		END_IF
+END_CASE
+]]></ST>
+    </Implementation>
+    <ObjectProperties />
+  </POU>
+</TcPlcObject>

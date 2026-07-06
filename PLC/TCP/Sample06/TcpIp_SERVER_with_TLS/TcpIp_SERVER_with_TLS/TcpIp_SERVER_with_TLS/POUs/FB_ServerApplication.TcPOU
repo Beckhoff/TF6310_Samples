@@ -1,0 +1,56 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1">
+  <POU Name="FB_ServerApplication" Id="{6a84e1ca-a433-48dd-ba76-3be472cf9286}" SpecialFunc="None">
+    <Declaration><![CDATA[(*------------- Simple TCP/IP server application. Adapt this code to match your needs. -----*)
+FUNCTION_BLOCK FB_ServerApplication
+VAR_IN_OUT
+	fbTx        : FB_FrameFifo;(* TX fifo *)
+	fbRx        : FB_FrameFifo;(* RX fifo *)
+	fbLog       : FB_LogFifo;(* Log message fifo *)
+END_VAR
+VAR
+	sToClient   : T_MaxString:='';
+	sFromClient : T_MaxString:='';
+	sLogMessage : T_MaxString:='';
+	nCounter    : UDINT;
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[(*------------------------------- Get received message strings ---------------------------------*)
+REPEAT
+	fbRx.RemoveHead( );(* Fetch string from rx fifo *)
+	IF fbRx.bOk THEN(* Success *)
+
+		(* TODO: Implement receive message handler *)
+		(* Example: Send message strings back to the client *)
+
+	
+		nCounter := nCounter + 1;
+	
+		sFromClient := fbRx.sGet;
+		sToClient := sFromClient;
+	
+		fbTx.AddTail( sPut := sToClient );(* Put string to the tx fifo *)
+		IF NOT fbTx.bOk THEN(* TX fifo overflow => log error *)
+			fbLog.Error( sMessage := 'FB_FrameFifo(sender)', nErrID := PLCPRJ_ERROR_SENDFIFO_OVERFLOW );
+		END_IF
+		
+	END_IF
+UNTIL NOT fbRx.bOk
+END_REPEAT
+
+(*------------------------------- Get log/error messages from log fifo ---------------------------*)
+REPEAT
+	fbLog.Remove( );
+	IF fbLog.bOk THEN(* Success *)
+		
+		(* TODO: Implement log message handler *)
+		sLogMessage := fbLog.sGet;
+		
+	END_IF
+UNTIL NOT fbLog.bOk
+END_REPEAT
+]]></ST>
+    </Implementation>
+  </POU>
+</TcPlcObject>

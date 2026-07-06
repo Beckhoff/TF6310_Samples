@@ -1,0 +1,158 @@
+﻿<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.0.23">
+  <POU Name="FB_Server" Id="{481ab15d-d96a-42ad-9e46-89f26d2633da}">
+    <Declaration><![CDATA[FUNCTION_BLOCK FB_Server
+VAR_INPUT
+	sSrvNetID		: T_AmsNetID	:= '';(* TwinCAT TCP/IP server network address *)
+	sLocalHost		: T_IPv4Addr 	:= '127.0.0.1';(* Own IP address! *)
+	nLocalPort		: UDINT 		:= 0;(* Server port number *)
+	bEnable			: BOOL 			:= FALSE;(* TRUE => enable server data exchange, FALSE => disable *)
+	tReconnect 		: TIME 			:= T#3S;(* Reopen new listener socket after this time *)
+	bLog			: BOOL 			:= FALSE;(* TRUE => Enable log message output, FALSE => Disable *)
+	sPrefix			: STRING 		:= 'SERVER::';(* Log message description string (allows the identification of log message source) *)
+END_VAR
+VAR_OUTPUT
+	bListening		: BOOL			:= FALSE;(* Listener socket state *)
+	nAccepted		: UDINT			:= 0;(* Max. number of accepted client connections *)
+END_VAR
+VAR
+	aApplications	: ARRAY[1..MAX_CLIENT_CONNECTIONS] OF FB_ServerApplication;(* Server application control function blocks *)
+	aConnections	: ARRAY[1..MAX_CLIENT_CONNECTIONS] OF FB_ServerConnection := 
+													[ 	(sPrefix := 'SERVER1::'), 
+														(sPrefix := 'SERVER2::'), 
+														(sPrefix := 'SERVER3::'), 
+														(sPrefix := 'SERVER4::'), 
+														(sPrefix := 'SERVER5::') ];(* Server connection/data exchange control function blocks *)
+	aTx 			: ARRAY[1..MAX_CLIENT_CONNECTIONS] OF FB_FrameFifo;(* TX fifo *)
+	aRx 			: ARRAY[1..MAX_CLIENT_CONNECTIONS] OF FB_FrameFifo;(* RX fifo *)
+	aLog			: ARRAY[1..MAX_CLIENT_CONNECTIONS] OF FB_LogFifo;(* Listener log message fifo *)
+	fbListen	 	: FB_SocketListen;
+	fbClose			: FB_SocketClose;
+	fbLog			: FB_LogFifo;
+	fbListenTimer	: TON;
+	bReset			: BOOL := FALSE;
+	eStep			: E_ServerSteps;
+	i				: UDINT;
+END_VAR
+
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[CASE eStep OF
+	eSERVER_STATE_IDLE:
+		IF bEnable XOR bListening THEN
+			IF bEnable THEN
+				fbListenTimer( IN := TRUE );
+				IF fbListenTimer.Q THEN
+					fbListenTimer( IN := FALSE, PT := tReconnect );
+
+					fbLog.Clear( sPrefix := sPrefix, bLog := bLog );(* Clear listener log fifo *)
+					bReset := FALSE;
+
+					eStep := eSERVER_STATE_LISTENER_OPEN_START;
+				END_IF
+			ELSE
+				eStep := eSERVER_STATE_REMOTE_CLIENTS_CLOSE;
+			END_IF
+		ELSIF bListening THEN
+			eStep := eSERVER_STATE_REMOTE_CLIENTS_COMM;
+		ELSE
+			fbListenTimer( IN := FALSE, PT := T#0S );
+			bReset := FALSE;
+		END_IF
+
+	eSERVER_STATE_LISTENER_OPEN_START:
+		fbListen(  bExecute := FALSE  );
+		fbListen( 	sSrvNetID := sSrvNetID, 
+					sLocalHost := sLocalHost, 
+					nLocalPort := nLocalPort, 
+					bExecute := TRUE );
+		eStep := eSERVER_STATE_LISTENER_OPEN_WAIT;
+
+	eSERVER_STATE_LISTENER_OPEN_WAIT:
+		fbListen( bExecute := FALSE );
+		IF NOT fbListen.bBusy THEN
+			IF NOT fbListen.bError THEN
+				bListening 	:= TRUE;
+				fbLog.Message( sMessage := 'Listener socket opened!', hSocket := fbListen.hListener );
+				eStep := eSERVER_STATE_IDLE;
+			ELSE
+				fbLog.Error( sMessage := 'FB_SocketListen()', nErrId := fbListen.nErrId );
+				eStep := eSERVER_STATE_ERROR;
+			END_IF
+		END_IF
+
+	eSERVER_STATE_REMOTE_CLIENTS_COMM:
+		eStep := eSERVER_STATE_IDLE;
+		nAccepted := 0;
+
+		FOR i:= 1 TO MAX_CLIENT_CONNECTIONS DO
+			aConnections[i]( fbTx := aTx[i], fbRx := aRx[i], fbLog := aLog[i],
+							hListener := fbListen.hListener, bReset := bReset,
+							sSrvNetID := sSrvNetID, bEnable := bEnable,	bLog := bLog ); 
+			IF bReset THEN
+				bReset := FALSE; 
+				eStep := eSERVER_STATE_REMOTE_CLIENTS_CLOSE;
+				EXIT;
+			END_IF
+			
+			IF aConnections[i].bAccepted THEN
+				aApplications[i]( fbTx := aTx[i], fbRx := aRx[i], fbLog := aLog[i] );
+				nAccepted := nAccepted + 1;(* Count the number of connected remote clients *)
+			END_IF
+
+		END_FOR
+
+	eSERVER_STATE_REMOTE_CLIENTS_CLOSE:
+		nAccepted := 0;
+		FOR i:= 1 TO MAX_CLIENT_CONNECTIONS DO
+			(* Close all remote client (accepted) sockets *)
+			aConnections[i]( fbTx := aTx[i], fbRx := aRx[i], fbLog := aLog[i],
+							hListener := fbListen.hListener, bReset := bReset,
+							sSrvNetID := sSrvNetID, bEnable := FALSE, bLog := bLog ); 
+			IF aConnections[i].bAccepted THEN
+				nAccepted := nAccepted + 1;(* Count the number of connected remote clients *)
+			END_IF
+		END_FOR
+		
+		(* Check if all remote client sockets are closed *)
+		IF nAccepted = 0 THEN
+			eStep := eSERVER_STATE_LISTENER_CLOSE_START; (* Close listener socket too *)
+		END_IF
+
+	eSERVER_STATE_LISTENER_CLOSE_START:
+		fbLog.Message( sMessage := 'Closing listener socket!', hSocket := fbListen.hListener );
+		fbClose( bExecute := FALSE );
+		fbClose( sSrvNetID := sSrvNetID, hSocket := fbListen.hListener, bExecute:= TRUE );
+		eStep := eSERVER_STATE_LISTENER_CLOSE_WAIT;
+
+	eSERVER_STATE_LISTENER_CLOSE_WAIT:
+		fbClose( bExecute := FALSE );
+		IF NOT fbClose.bBusy THEN
+			bListening := FALSE;
+			nAccepted := 0;
+			IF NOT fbClose.bError THEN
+				eStep := eSERVER_STATE_IDLE;
+			ELSE
+				fbLog.Error( sMessage := 'FB_SocketClose(listener)', nErrId := fbListen.nErrID );
+				eStep := eSERVER_STATE_ERROR;
+			END_IF
+		END_IF
+
+	eSERVER_STATE_ERROR:
+		IF bListening THEN
+			eStep := eSERVER_STATE_REMOTE_CLIENTS_CLOSE;
+		ELSE
+			eStep := eSERVER_STATE_IDLE;
+		END_IF
+
+END_CASE
+
+
+
+
+
+
+]]></ST>
+    </Implementation>
+    <ObjectProperties />
+  </POU>
+</TcPlcObject>

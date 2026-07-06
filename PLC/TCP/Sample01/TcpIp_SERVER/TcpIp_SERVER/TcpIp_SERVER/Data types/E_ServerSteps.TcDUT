@@ -1,0 +1,17 @@
+﻿<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.0.20">
+  <DUT Name="E_ServerSteps" Id="{5b2c4d3d-ecf3-4a92-b9c7-461d442009e8}">
+    <Declaration><![CDATA[TYPE E_ServerSteps :
+(
+	eSERVER_STATE_IDLE,
+	eSERVER_STATE_LISTENER_OPEN_START,
+	eSERVER_STATE_LISTENER_OPEN_WAIT,
+	eSERVER_STATE_REMOTE_CLIENTS_COMM,
+	eSERVER_STATE_REMOTE_CLIENTS_CLOSE,
+	eSERVER_STATE_LISTENER_CLOSE_START,
+	eSERVER_STATE_LISTENER_CLOSE_WAIT,
+	eSERVER_STATE_ERROR
+);
+END_TYPE]]></Declaration>
+    <ObjectProperties />
+  </DUT>
+</TcPlcObject>

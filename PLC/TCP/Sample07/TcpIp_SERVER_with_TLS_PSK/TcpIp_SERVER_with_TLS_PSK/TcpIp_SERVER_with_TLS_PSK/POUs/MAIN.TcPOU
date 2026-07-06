@@ -1,0 +1,45 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1">
+  <POU Name="MAIN" Id="{7b6efa2b-c8d0-4c9b-b40c-faa65e5b128e}" SpecialFunc="None">
+    <Declaration><![CDATA[PROGRAM MAIN
+VAR
+	sSrvNetID   : T_AmsNetID :='';(* TwinCAT TCP/IP server network address *)
+	{warning 'Please configure your server IP-address and server port number below:'}
+	sLocalHost  : T_IPv4Addr :='127.0.0.1';(*Own (server) IP address! *)
+	nLocalPort  : UINT       :=200;(* Own (server) port number! *)
+	
+	bEnable     : BOOL       :=TRUE;(* TRUE => Enable server data exchange, FALSE => Disable *)
+	bLog        : BOOL       :=TRUE;(* TRUE => Enable message/error log, FALSE => Disable *)
+	
+	bPSK        : BOOL       :=TRUE;(* TRUE => use PSK , FALSE => don't use PSK *)
+	key         : ARRAY[0..14] OF BYTE:=[16#1B,16#D0,16#6F,16#D2,16#56,16#16,16#7D,16#C1,16#E8,16#C7,16#48,16#2A,16#8E,16#F5,16#FF];
+	fbTls       : FB_TlsConfig;(* TLS/PSK configuration *)
+	
+	fbServer    : FB_Server:=(sLocalHost:=sLocalHost, nLocalPort:=nLocalPort, sPrefix:='SERVER::');
+	fbCloseAll  : FB_SocketCloseAll;
+	bInitialize : BOOL:=TRUE;
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[IF bInitialize THEN
+	(* On PLC reset or program download close all created/opened sockets/connections *)
+	fbCloseAll(sSrvNetID:=sSrvNetID, bExecute:=bInitialize);
+	IF fbCloseAll.bBusy OR fbCloseAll.bError THEN
+		RETURN;
+	END_IF
+	
+	(* Configure TLS/PSK settings *)
+	fbTls.Clear();
+	IF bPSK THEN
+		fbTls.AddPsk(key:=key, sIdentity:='MyIdentity');
+	END_IF
+	
+	bInitialize:=FALSE;
+END_IF
+
+fbServer(fbTls:=fbTls, sSrvNetID:=sSrvNetID, bEnable:=bEnable, bLog:=bLog);
+
+]]></ST>
+    </Implementation>
+  </POU>
+</TcPlcObject>

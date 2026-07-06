@@ -1,0 +1,2 @@
+deb https://deb-mirror.beckhoff.com/debian trixie main
+deb https://deb-mirror.beckhoff.com/debian-security trixie-security main

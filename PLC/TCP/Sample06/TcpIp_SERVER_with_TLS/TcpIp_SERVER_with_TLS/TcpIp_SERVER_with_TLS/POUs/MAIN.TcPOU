@@ -1,0 +1,61 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1">
+  <POU Name="MAIN" Id="{7b6efa2b-c8d0-4c9b-b40c-faa65e5b128e}" SpecialFunc="None">
+    <Declaration><![CDATA[PROGRAM MAIN
+VAR
+	sSrvNetID   : T_AmsNetID :='';(* TwinCAT TCP/IP server network address *)
+	{warning 'Please configure your server IP-address and server port number below:'}
+	sLocalHost  : T_IPv4Addr :='127.0.0.1';(* Own (server) IP address! *)
+	nLocalPort  : UINT       :=200;(* Own (server) port number! *)
+	bEnable     : BOOL       :=TRUE;(* TRUE => Enable server data exchange, FALSE => Disable *)
+	bLog        : BOOL       :=TRUE;(* TRUE => Enable message/error log, FALSE => Disable *)
+	
+	bRootCA     : BOOL       :=TRUE;
+	bCert       : BOOL       :=TRUE;
+	bCrl        : BOOL       :=FALSE;
+	bFlags      : BOOL       :=TRUE;
+	flags       : ST_TlsListenFlags:=DEFAULT_TLSLISTENFLAGS;(*Default TLS listen flags *);
+	fbTls       : FB_TlsConfig;(* TLS/PSK configuration *)
+	
+	fbServer    : FB_Server:=(sLocalHost:=sLocalHost, nLocalPort:=nLocalPort, sPrefix:='SERVER::');
+
+	fbCloseAll  : FB_SocketCloseAll;
+	bInitialize : BOOL:=TRUE;
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[IF bInitialize THEN
+	(* On PLC reset or program download close all created/opened sockets/connections *)
+	fbCloseAll(sSrvNetID:=sSrvNetID, bExecute:=bInitialize);
+	IF fbCloseAll.bBusy OR fbCloseAll.bError THEN
+		RETURN;
+	END_IF
+	
+	(* Configure TLS settings *)
+	fbTls.Clear();
+	IF bRootCA THEN
+		bRootCA:=FALSE;
+		fbTls.AddCa(sCaPath:='C:\TwinCAT\3.1\Target\Certificates\MyRootCA.pem');
+	END_IF
+	IF bCert THEN
+		bCert:=FALSE;
+		fbTls.AddCert(sCertPath:='C:\TwinCAT\3.1\Target\Certificates\MyServer.crt', sKeyPath:='C:\TwinCAT\3.1\Target\Certificates\MyServer.key', sKeyPwd:='1234');
+	END_IF
+	IF bCrl THEN
+		bCrl:=FALSE;
+		fbTls.AddCrl(sCrlPath:='C:\TwinCAT\3.1\Target\Certificates\intermediateCA.crl');
+	END_IF
+	IF bFlags THEN
+		bFlags:=FALSE;
+		fbTls.AddListenFlags(flags:=flags);
+	END_IF
+	
+	bInitialize:=FALSE;
+END_IF
+
+fbServer(fbTls:=fbTls, sSrvNetID:=sSrvNetID, bEnable:=bEnable, bLog:=bLog);
+
+]]></ST>
+    </Implementation>
+  </POU>
+</TcPlcObject>

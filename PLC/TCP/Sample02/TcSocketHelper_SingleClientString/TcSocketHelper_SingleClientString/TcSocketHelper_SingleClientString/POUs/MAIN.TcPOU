@@ -1,0 +1,29 @@
+﻿<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.0.23">
+  <POU Name="MAIN" Id="{f19a7675-63a5-437b-a2f6-f34587c7a252}">
+    <Declaration><![CDATA[PROGRAM MAIN
+VAR
+	sSrvNetID		: T_AmsNetID	:= '';(* TwinCAT TCP/IP server network address *)
+	bEnable			: BOOL 			:= TRUE;(* TRUE => enable client data exchange, FALSE => disable *)
+	bLog			: BOOL			:= TRUE;(* TRUE => Enable message/error log, FALSE => Disable *)
+
+	fbClient		: FB_Client := ( 	sRemoteHost := '127.0.0.1',(* Remote (server) IP address! *)
+										nRemotePort := 200,(* Remote (server) port number! *)  
+										sPrefix := 'CLIENT::' );(* Application (connection) instance *)
+	fbCloseAll		: FB_SocketCloseAll;
+	bInitialize		: BOOL := TRUE;
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[(* On PLC reset or program download close all old (opened) connections *)
+fbCloseAll( sSrvNetID := sSrvNetID, bExecute:= bInitialize );
+IF fbCloseAll.bBusy OR fbCloseAll.bError THEN
+	RETURN;
+END_IF
+bInitialize := FALSE;
+
+fbClient( sSrvNetId := sSrvNetID, bEnable := bEnable, bLog := bLog );
+]]></ST>
+    </Implementation>
+    <ObjectProperties />
+  </POU>
+</TcPlcObject>

@@ -1,0 +1,39 @@
+<?xml version="1.0"?>
+<TcSmProject xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://www.beckhoff.com/schemas/2012/07/TcSmProject" TcSmVersion="1.0" TcVersion="3.1.4024.32">
+	<Project ProjectGUID="{0C5F7FA6-612D-4444-84CB-F1C49DDE967E}" Target64Bit="true" ShowHideConfigurations="#x106">
+		<System>
+			<Licenses>
+				<Target>
+					<ManualSelect>{3EBB9639-5FF3-42B6-8847-35C70DC013C8}</ManualSelect>
+				</Target>
+			</Licenses>
+			<Tasks>
+				<Task Id="3" Priority="21" CycleTime="100000" AmsPort="350" AdtTasks="true">
+					<Name>PlcTaskClient</Name>
+				</Task>
+			</Tasks>
+		</System>
+		<Plc>
+			<Project GUID="{52761EC0-3691-4DBB-B5CB-C5C883C976CD}" Name="TcpIp_CLIENT_with_TLS_PSK" PrjFilePath="TcpIp_CLIENT_with_TLS_PSK\TcpIp_CLIENT_with_TLS_PSK.plcproj" TmcFilePath="TcpIp_CLIENT_with_TLS_PSK\TcpIp_CLIENT_with_TLS_PSK.tmc" ReloadTmc="true" AmsPort="851" TargetArchiveSettings="#x0002" FileArchiveSettings="#x0002" SymbolicMapping="true">
+				<Instance Id="#x08502000" TcSmClass="TComPlcObjDef" KeepUnrestoredLinks="2" TmcPath="TcpIp_CLIENT_with_TLS_PSK\TcpIp_CLIENT_with_TLS_PSK.tmc" TmcHash="{2E37B53F-ECD2-77E3-2374-C61FAD0BAF6D}">
+					<Name>TcpIp_CLIENT_with_TLS_PSK Instance</Name>
+					<CLSID ClassFactory="TcPlc30">{08500001-0000-0000-F000-000000000064}</CLSID>
+					<Contexts>
+						<Context>
+							<Id NeedCalleeCall="true">0</Id>
+							<Name>PlcTaskClient</Name>
+							<ManualConfig>
+								<OTCID>#x02010030</OTCID>
+							</ManualConfig>
+							<Priority>21</Priority>
+							<CycleTime>10000000</CycleTime>
+						</Context>
+					</Contexts>
+					<TaskPouOids>
+						<TaskPouOid Prio="21" OTCID="#x08502001"/>
+					</TaskPouOids>
+				</Instance>
+			</Project>
+		</Plc>
+	</Project>
+</TcSmProject>

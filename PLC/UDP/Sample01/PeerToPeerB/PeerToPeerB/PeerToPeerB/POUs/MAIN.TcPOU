@@ -1,0 +1,100 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.0.26">
+  <POU Name="MAIN" Id="{144016cd-38a6-4f6b-84af-83f2c9ef119e}">
+    <Declaration><![CDATA[PROGRAM MAIN
+VAR
+	bSendOnceToItself	: BOOL;(* Rising edge at this variable sends message to local host/port (itself) *)
+	bSendOnceToRemote	: BOOL;(* Rising edge at this variable sends message to the remote host/port *)
+	sSrvNetId			: T_AmsNetID 	:= '';(* TwinCAT TCP/IP server network address. Default: empty string. *)
+	sLocalHost			: T_IPv4Addr 	:= '127.0.0.1';(* Local address: String containing an (Ipv4) Internet Protocol dotted address. *) 
+	nLocalPort			: UDINT			:= 11000;(* Local address: IP port number *)
+	sRemoteHost			: T_IPv4Addr 	:= '127.0.0.1';(* Remote address: String containing an (Ipv4) Internet Protocol dotted address. *)
+	nRemotePort			: UDINT 		:= 10000;(* Remote address: IP port number. *)
+	bEnable				: BOOL 			:= TRUE;(* TRUE => Enable/connect, FALSE => Disable/disconnect *)
+	bLog				: BOOL			:= TRUE;(* TRUE => Enable log message output, FALSE => Disable *)
+	
+	fbPeerToPeer		: FB_PeerToPeer := ( sPrefix := 'PeerToPeerB::' ) ;
+	
+   	fbTx				: FB_FrameFifo;
+   	fbRx				: FB_FrameFifo;
+   	fbLog				: FB_LogFifo;
+	
+   	stSendTo			: ST_FrameFifoEntry;
+   	stReceivedFrom		: ST_FrameFifoEntry;
+	sLoggedMessage		: T_MaxString;
+
+   	fbCloseAll 			: FB_SocketCloseAll;
+   	bInitialize			: BOOL := TRUE;
+END_VAR]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[(* On PLC reset or program download close all opened/created sockets *)
+fbCloseAll( sSrvNetId := sSrvNetId, bExecute:= bInitialize );
+IF fbCloseAll.bBusy OR fbCloseAll.bError THEN
+	RETURN;
+END_IF
+bInitialize := FALSE;
+
+(* Send and receive messages *)
+fbPeerToPeer( 	sSrvNetId := sSrvNetId, 
+				fbTx := fbTx, 
+				fbRx := fbRx,
+				fbLog := fbLog, 
+				sLocalHost := sLocalHost, 
+				nLocalPort := nLocalPort, 
+				bEnable := bEnable, bLog := bLog );
+
+IF fbPeerToPeer.bCreated THEN
+	
+	IF bSendOnceToRemote THEN
+		bSendOnceToRemote 			:= FALSE;		(* Clear flag *)
+		stSendTo.stRemoteAddr.sAddr := sRemoteHost;	(* Remote host IP address *)
+		stSendTo.stRemoteAddr.nPort := nRemotePort;	(* Remote host port number *)
+		stSendTo.sMessage			:= 'Hello remote host!';(* Message text *)
+		fbTx.AddTail( stPut := stSendTo );	(* Add new entry to the send queue *)
+		IF NOT fbTx.bOk THEN				(* Check for fifo overflow *)
+			fbLog.Error( sMessage := 'FB_FrameFifo(sender)', nErrID := PLCPRJ_ERROR_SENDFIFO_OVERFLOW );
+		END_IF
+	END_IF
+	
+	IF bSendOnceToItself THEN
+		bSendOnceToItself 			:= FALSE;		(* Clear flag *)
+		stSendTo.stRemoteAddr.sAddr := sLocalHost;	(* Remote host == sLocalHost =>send it to itself *)
+		stSendTo.stRemoteAddr.nPort := nLocalPort;	(* Remote port == nLocalPort => send it to itself *)
+		stSendTo.sMessage			:= 'Hello itself!';(* Message text *)
+		fbTx.AddTail( stPut := stSendTo );	(* Add new entry to the send queue *)
+		IF NOT fbTx.bOk THEN				(* Check for fifo overflow *)
+			fbLog.Error( sMessage := 'FB_FrameFifo(sender)', nErrID := PLCPRJ_ERROR_SENDFIFO_OVERFLOW );
+		END_IF
+	END_IF
+	
+END_IF
+				
+(* Remove all received frames from queue *)
+REPEAT
+	fbRx.RemoveHead( );
+	IF fbRx.bOk THEN
+
+		(* TODO:: Implement received frame handler *)
+		stReceivedFrom := fbRx.stGet;
+(*		ADSLOGSTR( ADSLOG_MSGTYPE_HINT OR ADSLOG_MSGTYPE_LOG OR ADSLOG_MSGTYPE_MSGBOX, '%s', stReceivedFrom.sMessage ); *)
+		
+	END_IF
+UNTIL NOT fbRx.bOk
+END_REPEAT
+
+(* Remove all log messages from queue *)
+REPEAT
+	fbLog.Remove( );
+	IF fbLog.bOk THEN
+
+		(* TODO:: Implement log message handler *)
+		sLoggedMessage := fbLog.sGet;
+
+	END_IF
+UNTIL NOT fbLog.bOk
+END_REPEAT
+]]></ST>
+    </Implementation>
+    <ObjectProperties />
+  </POU>
+</TcPlcObject>

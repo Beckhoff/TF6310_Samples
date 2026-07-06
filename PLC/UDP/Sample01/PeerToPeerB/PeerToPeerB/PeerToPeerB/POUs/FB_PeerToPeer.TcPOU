@@ -1,0 +1,162 @@
+﻿<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.0.23">
+  <POU Name="FB_PeerToPeer" Id="{32ed0a26-81fc-495d-8720-ffa048e85ae5}">
+    <Declaration><![CDATA[(* Function block example of UDP peer-to-peer application *)
+FUNCTION_BLOCK FB_PeerToPeer
+VAR_IN_OUT
+	fbTx		: FB_FrameFifo;(* TX fifo *)
+	fbRx		: FB_FrameFifo;(* RX fifo *)
+	fbLog		: FB_LogFifo;(* Log message fifo *)
+END_VAR
+VAR_INPUT
+	sSrvNetId		: T_AmsNetID 	:= '';(* TwinCAT TCP/IP server network address. Default: empty string. *)
+	sLocalHost		: T_IPv4Addr 	:= '127.0.0.1';(* Local address: String containing an (Ipv4) Internet Protocol dotted address. *)
+	nLocalPort		: UDINT 		:= 0;(* Local address: IP port number. *)
+	bEnable 		: BOOL			:= FALSE;(* TRUE => Enable/connect, FALSE => Disable/disconnect *)
+	tReconnect		: TIME			:= T#5S;(* Reconnect delay time *)
+	bLog			: BOOL			:= FALSE;(* TRUE => Enable log message output, FALSE => Disable *)
+	sPrefix			: STRING 		:= 'PeerToPeerX::';(* Log message description string (allows the identification of log message source) *)
+END_VAR
+VAR_OUTPUT
+	bCreated		: BOOL;(* Connectionless socket state (TRUE => created, FALSE => closed) *)
+END_VAR
+VAR
+	fbCreate		: FB_SocketUdpCreate;
+	fbClose			: FB_SocketClose;
+	fbReceiveFrom	: FB_SocketUdpReceiveFrom;
+	fbSendTo		: FB_SocketUdpSendTo;
+	stSendTo		: ST_FrameFifoEntry;
+	stReceivedFrom	: ST_FrameFifoEntry;
+	fbCreateTimer	: TON := ( PT := T#0S );	
+	eStep			: E_ClientServerSteps;
+END_VAR]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[CASE eStep OF
+	eUDP_STATE_IDLE:
+		IF bEnable XOR bCreated THEN
+			IF bEnable THEN
+				fbTx.Clear( sPrefix := CONCAT( sPrefix, 'FB_FrameFifo(sender)::' ), bLog := bLog );(* Clear send fifo *)
+				fbRx.Clear( sPrefix := CONCAT( sPrefix, 'FB_FrameFifo(receiver)::' ), bLog := bLog );(* Clear receiver fifo *)
+				fbLog.Clear( sPrefix := sPrefix, bLog := bLog );(* Clear log fifo *)
+
+				(* At program start (first time) connect emmediately, next time after delay time *)
+				fbCreateTimer( IN := TRUE );
+				IF fbCreateTimer.Q THEN
+					fbCreateTimer( IN := FALSE, PT := tReconnect ); 
+					eStep := eUDP_STATE_CREATE_START;
+				END_IF
+			ELSE
+				eStep := eUDP_STATE_CLOSE_START;
+			END_IF
+		ELSIF bCreated THEN
+			fbTx.RemoveHead( stGet => stSendTo );
+			IF fbTx.bOk THEN
+				eStep := eUDP_STATE_SEND_START;
+			ELSE (* Empty *)
+				eStep := eUDP_STATE_RECEIVE_START;
+			END_IF
+		ELSE
+			fbCreateTimer( IN := FALSE, PT := T#0S );
+		END_IF
+
+	eUDP_STATE_CREATE_START:
+		fbCreate( bExecute := FALSE  );
+		fbCreate( sSrvNetId := sSrvNetId, sLocalHost:= sLocalHost, nLocalPort:= nLocalPort, bExecute:= TRUE );
+		eStep := eUDP_STATE_CREATE_WAIT;
+
+	eUDP_STATE_CREATE_WAIT:
+		fbCreate( bExecute := FALSE );
+		IF NOT fbCreate.bBusy THEN
+			IF NOT fbCreate.bError THEN
+				bCreated := TRUE;
+				fbLog.Message( sMessage := 'Connectionless (UDP) socket created!', hSocket := fbCreate.hSocket );
+				eStep := eUDP_STATE_IDLE;
+			ELSE
+				fbLog.Error( sMessage := 'FB_SocketUdpCreate()', nErrID := fbCreate.nErrID );
+				eStep := eUDP_STATE_ERROR;
+			END_IF
+		END_IF
+
+	eUDP_STATE_SEND_START:
+		fbSendTo( bExecute := FALSE );
+		fbSendTo( sSrvNetId := sSrvNetId, sRemoteHost := stSendTo.stRemoteAddr.sAddr,
+					nRemotePort := stSendTo.stRemoteAddr.nPort,
+					pSrc:= ADR( stSendTo.sMessage ),
+					cbLen:= INT_TO_UDINT(LEN( stSendTo.sMessage )) + 1, (* Include the end delimiter *)
+					hSocket:= fbCreate.hSocket, bExecute:= TRUE );
+		eStep := eUDP_STATE_SEND_WAIT;
+
+	eUDP_STATE_SEND_WAIT:
+		fbSendTo( bExecute := FALSE );
+		IF NOT fbSendTo.bBusy THEN
+			IF NOT fbSendTo.bError THEN
+				eStep := eUDP_STATE_RECEIVE_START;
+			ELSE
+				fbLog.Error( sMessage := 'FB_SocketUdpSendTo()', nErrID := fbSendTo.nErrID );
+				eStep := eUDP_STATE_ERROR;
+			END_IF
+		END_IF
+
+	eUDP_STATE_RECEIVE_START:
+		MEMSET( ADR( stReceivedFrom ), 0, SIZEOF( stReceivedFrom ) );
+		fbReceiveFrom( bExecute := FALSE );
+		fbReceiveFrom( sSrvNetId := sSrvNetId, 
+						pDest:= ADR( stReceivedFrom.sMessage ),
+						cbLen:= SIZEOF( stReceivedFrom.sMessage ) - 1, (* Without string delimiter *)
+						hSocket:= fbCreate.hSocket, bExecute:= TRUE );
+		eStep := eUDP_STATE_RECEIVE_WAIT;
+
+	eUDP_STATE_RECEIVE_WAIT:
+		fbReceiveFrom( bExecute := FALSE );
+		IF NOT fbReceiveFrom.bBusy THEN
+			IF NOT fbReceiveFrom.bError THEN
+				IF fbReceiveFrom.nRecBytes > 0 THEN
+					
+					stReceivedFrom.stRemoteAddr.sAddr := fbReceiveFrom.sRemoteHost;
+					stReceivedFrom.stRemoteAddr.nPort := fbReceiveFrom.nRemotePort;
+					
+					fbRx.AddTail( stPut := stReceivedFrom );
+					IF NOT fbRx.bOk THEN(* Check for fifo overflow *)
+						fbLog.Error( sMessage :='FB_FrameFifo(receiver)', nErrID := PLCPRJ_ERROR_RECFIFO_OVERFLOW );
+					END_IF
+				END_IF
+				eStep := eUDP_STATE_IDLE;
+			ELSE
+				fbLog.Error( sMessage := 'FB_SocketUdpReceiveFrom()', nErrID := fbReceiveFrom.nErrID );
+				IF fbReceiveFrom.nErrID = 16#80072746 THEN(* Connection is reset by remote side *)
+					eStep := eUDP_STATE_IDLE;
+				ELSE
+					eStep := eUDP_STATE_ERROR;
+				END_IF
+			END_IF
+		END_IF
+
+	eUDP_STATE_CLOSE_START:
+		fbLog.Message( sMessage := 'Closing connectionless (UDP) socket!', hSocket := fbCreate.hSocket );
+		fbClose( bExecute := FALSE );
+		fbClose( sSrvNetId := sSrvNetId, hSocket := fbCreate.hSocket, bExecute := TRUE );
+		eStep := eUDP_STATE_CLOSE_WAIT;
+
+	eUDP_STATE_CLOSE_WAIT:
+		fbClose( bExecute := FALSE );
+		IF NOT fbClose.bBusy THEN
+			bCreated := FALSE;
+			IF NOT fbClose.bError THEN
+				eStep := eUDP_STATE_IDLE;
+			ELSE
+				fbLog.Error( sMessage := 'FB_SocketClose()', nErrID := fbClose.nErrID );
+				eStep := eUDP_STATE_ERROR;
+			END_IF
+		END_IF
+
+	eUDP_STATE_ERROR: (* Error step *)
+		IF bCreated THEN
+			eStep := eUDP_STATE_CLOSE_START;
+		ELSE
+			eStep := eUDP_STATE_IDLE;
+		END_IF
+END_CASE
+]]></ST>
+    </Implementation>
+    <ObjectProperties />
+  </POU>
+</TcPlcObject>

@@ -1,0 +1,16 @@
+﻿<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.0.23">
+  <DUT Name="ST_BinaryHeader" Id="{dfbae6bb-3254-405d-be1d-b6711156feca}">
+    <Declaration><![CDATA[(* Simple binary TCP/IP frame header (8 byte aligned) *)
+TYPE ST_BinaryHeader :
+STRUCT
+	dwStart		: DWORD	:= 16#BECF1234;	(* Start bytes *)
+	cbLength	: UDINT(0..PLCPRJ_BUFFER_SIZE) := 0;(* Max. length of attached binary data *)
+	nS			: UDINT := 0;(* Send counter *)
+	nR			: UDINT	:= 0;(* Receive counter *)
+	
+	(* Total header data size = 16 byte *)
+END_STRUCT
+END_TYPE]]></Declaration>
+    <ObjectProperties />
+  </DUT>
+</TcPlcObject>

@@ -1,0 +1,141 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == ''">Debug</Configuration>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{7c907fc4-86dd-4a33-b604-cacc8817766d}</ProjectGuid>
+    <Name>TcSocketHelper_MultiClientBinary</Name>
+    <TypeSystem>{54c7e3f2-e039-408f-9259-e04072b6afe8}</TypeSystem>
+    <Implicit_Task_Info>{19725cc5-38a9-49e1-a50b-ff44c1c3ec33}</Implicit_Task_Info>
+    <Implicit_Jitter_Distribution>{0f7690f7-5cc4-4d3d-b2e9-11920cbdd87b}</Implicit_Jitter_Distribution>
+    <Implicit_KindOfTask>{8d6894e4-a3cd-4516-a3c1-10f2cb2f346f}</Implicit_KindOfTask>
+    <Application>{c4efd260-4622-4d5e-9583-d6e76d6241e6}</Application>
+    <ExternalTypes>
+      <Type Guid="{18071995-0000-0000-0000-000000000019}">HRESULT</Type>
+      <Type Guid="{18071995-0000-0000-0000-000000000025}">IID</Type>
+      <Type Guid="{00000030-0000-0000-e000-000000000064}">ITComObjectServer</Type>
+      <Type Guid="{02000002-0000-0000-e000-000000000064}">ITcTask</Type>
+      <Type Guid="{00000001-0000-0000-e000-000000000064}">ITcUnknown</Type>
+      <Type Guid="{d91e046a-a488-4d27-8d43-0f3c40ed5081}">PlcAppSystemInfo</Type>
+      <Type Guid="{6a76d020-03a2-465c-a678-c341951e9ef3}">PlcTaskSystemInfo</Type>
+    </ExternalTypes>
+    <FileVersion>1.0.0.0</FileVersion>
+    <LibraryReferences>{1be2db2a-d259-4154-8827-12a9045d1e67}</LibraryReferences>
+    <CompilerDefines />
+    <dynamic_memory_size>
+    </dynamic_memory_size>
+    <ProgramVersion>3.1.0.5</ProgramVersion>
+    <SccProjectName>SAK</SccProjectName>
+    <SccProvider>SAK</SccProvider>
+    <SccAuxPath>SAK</SccAuxPath>
+    <SccLocalPath>SAK</SccLocalPath>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)' == 'Debug' " />
+  <ItemGroup>
+    <Folder Include="Data types" />
+    <Folder Include="Global Variables" />
+    <Folder Include="POUs" />
+    <Folder Include="POUs\Helper POUs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Data types\ST_ApplicationBinaryData.TcDUT">
+      <ObjectGuid>{97809e4b-0c80-49f3-9c43-ff872bccafeb}</ObjectGuid>
+    </Compile>
+    <Compile Include="Data types\ST_BinaryFrame.TcDUT">
+      <ObjectGuid>{38ba11a9-85c9-47ca-b5f1-03cdc77c0622}</ObjectGuid>
+    </Compile>
+    <Compile Include="Data types\ST_BinaryHeader.TcDUT">
+      <ObjectGuid>{dfbae6bb-3254-405d-be1d-b6711156feca}</ObjectGuid>
+    </Compile>
+    <Compile Include="Global Variables\Global_Variables.TcGVL">
+      <ObjectGuid>{e0d76a7c-20bd-4777-b33b-7ffe02a1d029}</ObjectGuid>
+    </Compile>
+    <Compile Include="POUs\FB_Client.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="POUs\FB_ClientApplication.TcPOU">
+      <ObjectGuid>{e8aa5895-0a6f-4217-b316-2acfb70026a2}</ObjectGuid>
+    </Compile>
+    <Compile Include="POUs\FB_ClientConnection.TcPOU">
+      <ObjectGuid>{4590c77d-362f-45db-acf0-422d38b2dc5e}</ObjectGuid>
+    </Compile>
+    <Compile Include="POUs\Helper POUs\FB_FrameFifo.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="POUs\Helper POUs\FB_LogFifo.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="POUs\Helper POUs\F_ADSLOGHEXDATA.TcPOU">
+      <ObjectGuid>{3a534e3d-56f5-4266-b3ab-8b399cfd4fb1}</ObjectGuid>
+    </Compile>
+    <Compile Include="POUs\MAIN.TcPOU">
+      <ObjectGuid>{4c502644-9835-4c1d-a89e-43c96323ce60}</ObjectGuid>
+    </Compile>
+    <Compile Include="PlcTaskClient.TcTTO">
+      <ObjectGuid>{3f3d7774-c9f2-48dd-b71e-4cb1d8dd9e04}</ObjectGuid>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="TcSocketHelper_MultiClientBinary.tmc">
+      <SubType>Content</SubType>
+    </Content>
+  </ItemGroup>
+  <ItemGroup>
+    <PlaceholderReference Include="Tc2_Standard">
+      <DefaultResolution>Tc2_Standard, * (Beckhoff Automation GmbH)</DefaultResolution>
+      <Namespace>Tc2_Standard</Namespace>
+    </PlaceholderReference>
+    <PlaceholderReference Include="Tc2_System">
+      <DefaultResolution>Tc2_System, * (Beckhoff Automation GmbH)</DefaultResolution>
+      <Namespace>Tc2_System</Namespace>
+    </PlaceholderReference>
+    <PlaceholderReference Include="Tc2_TcpIp">
+      <DefaultResolution>Tc2_TcpIp, * (Beckhoff Automation GmbH)</DefaultResolution>
+      <Namespace>Tc2_TcpIp</Namespace>
+    </PlaceholderReference>
+    <PlaceholderReference Include="Tc2_Utilities">
+      <DefaultResolution>Tc2_Utilities, * (Beckhoff Automation GmbH)</DefaultResolution>
+      <Namespace>Tc2_Utilities</Namespace>
+    </PlaceholderReference>
+    <PlaceholderReference Include="Tc3_Module">
+      <DefaultResolution>Tc3_Module, * (Beckhoff Automation GmbH)</DefaultResolution>
+      <Namespace>Tc3_Module</Namespace>
+    </PlaceholderReference>
+  </ItemGroup>
+  <ProjectExtensions>
+    <PlcProjectOptions>﻿<XmlArchive><Data><o xml:space="preserve" t="OptionKey">
+      <v n="Name">"&lt;ProjectRoot&gt;"</v>
+      <d n="SubKeys" t="Hashtable" ckt="String" cvt="OptionKey">
+        <v>{246001F4-279D-43AC-B241-948EB31120E1}</v>
+        <o>
+          <v n="Name">"{246001F4-279D-43AC-B241-948EB31120E1}"</v>
+          <d n="SubKeys" t="Hashtable" />
+          <d n="Values" t="Hashtable" />
+        </o>
+        <v>{40450F57-0AA3-4216-96F3-5444ECB29763}</v>
+        <o>
+          <v n="Name">"{40450F57-0AA3-4216-96F3-5444ECB29763}"</v>
+          <d n="SubKeys" t="Hashtable" />
+          <d n="Values" t="Hashtable" ckt="String" cvt="String">
+            <v>ActiveVisuProfile</v>
+            <v>IR0whWr8bweABwAAS+/1yQAAAAAlAgAAdVmyEgAAAAABAAAAAAAAAAEaUwB5AHMAdABlAG0ALgBTAHQAcgBpAG4AZwACTHsAZgA5ADUAYgBiADQAMgA2AC0ANQA1ADIANAAtADQAYgA0ADUALQA5ADQAMAAwAC0AZgBiADAAZgAyAGUANwA3AGUANQAxAGIAfQADCE4AYQBtAGUABBhUAHcAaQBuAEMAQQBUACAAVgAzAC4AMAAFFlAAcgBvAGYAaQBsAGUARABhAHQAYQAGTHsAMQA2AGUANQA1AGIANgAwAC0ANwAwADQAMwAtADQAYQA2ADMALQBiADYANQBiAC0ANgAxADQANwAxADMAOAA3ADgAZAA0ADIAfQAHEkwAaQBiAHIAYQByAGkAZQBzAAhMewAzAGIAZgBkADUANAA1ADkALQBiADAANwBmAC0ANABkADYAZQAtAGEAZQAxAGEALQBhADgAMwAzADUANgBhADUANQAxADQAMgB9AAlMewA5AGMAOQA1ADgAOQA2ADgALQAyAGMAOAA1AC0ANAAxAGIAYgAtADgAOAA3ADEALQA4ADkANQBmAGYAMQBmAGUAZABlADEAYQB9AAoOVgBlAHIAcwBpAG8AbgALBmkAbgB0AAwKVQBzAGEAZwBlAA0KVABpAHQAbABlAA4SVgBpAHMAdQBFAGwAZQBtAHMADw5DAG8AbQBwAGEAbgB5ABAMUwB5AHMAdABlAG0AERpWAGkAcwB1AEUAbABlAG0ATQBlAHQAZQByABIwVgBpAHMAdQBFAGwAZQBtAHMAUwBwAGUAYwBpAGEAbABDAG8AbgB0AHIAbwBsAHMAEyhWAGkAcwB1AEUAbABlAG0AcwBXAGkAbgBDAG8AbgB0AHIAbwBsAHMAFCJWAGkAcwB1AE4AYQB0AGkAdgBlAEMAbwBuAHQAcgBvAGwAFRR2AGkAcwB1AGkAbgBwAHUAdABzABYMcwB5AHMAdABlAG0AFxhWAGkAcwB1AEUAbABlAG0AQgBhAHMAZQAYJkQAZQB2AFAAbABhAGMAZQBoAG8AbABkAGUAcgBzAFUAcwBlAGQAGQhiAG8AbwBsABoiUABsAHUAZwBpAG4AQwBvAG4AcwB0AHIAYQBpAG4AdABzABtMewA0ADMAZAA1ADIAYgBjAGUALQA5ADQAMgBjAC0ANAA0AGQANwAtADkAZQA5ADQALQAxAGIAZgBkAGYAMwAxADAAZQA2ADMAYwB9ABwcQQB0AEwAZQBhAHMAdABWAGUAcgBzAGkAbwBuAB0UUABsAHUAZwBpAG4ARwB1AGkAZAAeFlMAeQBzAHQAZQBtAC4ARwB1AGkAZAAfSGEAZgBjAGQANQA0ADQANgAtADQAOQAxADQALQA0AGYAZQA3AC0AYgBiADcAOAAtADkAYgBmAGYAZQBiADcAMABmAGQAMQA3ACAUVQBwAGQAYQB0AGUASQBuAGYAbwAhTHsAYgAwADMAMwA2ADYAYQA4AC0AYgA1AGMAMAAtADQAYgA5AGEALQBhADAAMABlAC0AZQBiADgANgAwADEAMQAxADAANABjADMAfQAiDlUAcABkAGEAdABlAHMAI0x7ADEAOAA2ADgAZgBmAGMAOQAtAGUANABmAGMALQA0ADUAMwAyAC0AYQBjADAANgAtADEAZQAzADkAYgBiADUANQA3AGIANgA5AH0AJEx7AGEANQBiAGQANAA4AGMAMwAtADAAZAAxADcALQA0ADEAYgA1AC0AYgAxADYANAAtADUAZgBjADYAYQBkADIAYgA5ADYAYgA3AH0AJRZPAGIAagBlAGMAdABzAFQAeQBwAGUAJlRVAHAAZABhAHQAZQBMAGEAbgBnAHUAYQBnAGUATQBvAGQAZQBsAEYAbwByAEMAbwBuAHYAZQByAHQAaQBiAGwAZQBMAGkAYgByAGEAcgBpAGUAcwAnEEwAaQBiAFQAaQB0AGwAZQAoFEwAaQBiAEMAbwBtAHAAYQBuAHkAKR5VAHAAZABhAHQAZQBQAHIAbwB2AGkAZABlAHIAcwAqOFMAeQBzAHQAZQBtAC4AQwBvAGwAbABlAGMAdABpAG8AbgBzAC4ASABhAHMAaAB0AGEAYgBsAGUAKxJ2AGkAcwB1AGUAbABlAG0AcwAsSDYAYwBiADEAYwBkAGUAMQAtAGQANQBkAGMALQA0AGEAMwBiAC0AOQAwADUANAAtADIAMQBmAGEANwA1ADYAYQAzAGYAYQA0AC0oSQBuAHQAZQByAGYAYQBjAGUAVgBlAHIAcwBpAG8AbgBJAG4AZgBvAC5MewBjADYAMQAxAGUANAAwADAALQA3AGYAYgA5AC0ANABjADMANQAtAGIAOQBhAGMALQA0AGUAMwAxADQAYgA1ADkAOQA2ADQAMwB9AC8YTQBhAGoAbwByAFYAZQByAHMAaQBvAG4AMBhNAGkAbgBvAHIAVgBlAHIAcwBpAG8AbgAxDEwAZQBnAGEAYwB5ADIwTABhAG4AZwB1AGEAZwBlAE0AbwBkAGUAbABWAGUAcgBzAGkAbwBuAEkAbgBmAG8AMxpDAG8AbQBwAGEAdABpAGIAaQBsAGkAdAB5ANAAAhoD0AMBLQTQBQYaBtAHCBoBRQcJB9AACRoERQoLBAMAAAAFAAAAAAAAAAAAAADQDAutAQAAANANAS0O0A8BLRDQAAkaBEUKCwQDAAAABQAAAAAAAAAAAAAA0AwLrQIAAADQDQEtEdAPAS0Q0AAJGgRFCgsEAwAAAAUAAAAAAAAAAAAAANAMC60CAAAA0A0BLRLQDwEtENAACRoERQoLBAMAAAAFAAAAAAAAAAAAAADQDAutAgAAANANAS0T0A8BLRDQAAkaBEUKCwQDAAAABQAAAAAAAAAAAAAA0AwLrQIAAADQDQEtFNAPAS0Q0AAJGgRFCgsEAwAAAAUAAAAAAAAAAAAAANAMC60CAAAA0A0BLRXQDwEtFtAACRoERQoLBAMAAAAFAAAAAAAAAAAAAADQDAutBAAAANANAS0X0A8BLRDQGBmtAUUaGwHQABsaAkUcCwQDAAAABQAAAAAAAAAAAAAA0B0eLR/QICEaAkUiIwLQACQaBUUKCwQDAAAAAwAAAAAAAAAKAAAA0CULrQAAAADQAwEtJtAnAS0O0CgBLRDQACQaBUUKCwQDAAAAAwAAAAAAAAAKAAAA0CULrQEAAADQAwEtJtAnAS0O0CgBLRCaKSoBRQABAtAAAS0r0AABLRbQAB4tLNAtLhoD0C8LrQEAAADQMAutBQAAANAxGa0A0DIuGgPQLwutAgAAANAwC60AAAAA0DEZrQDQMxmtAA==</v>
+          </d>
+        </o>
+        <v>{FE9F63D4-9E34-43ce-9322-D46747A00F33}</v>
+        <o>
+          <v n="Name">"{FE9F63D4-9E34-43ce-9322-D46747A00F33}"</v>
+          <d n="SubKeys" t="Hashtable" />
+          <d n="Values" t="Hashtable" ckt="String">
+            <v>SourceDownloadContent</v>
+            <v>1</v>
+            <v>SourceDownloadContent2</v>
+            <a cet="Guid">
+              <v>b0b53f83-af78-49aa-8133-0063f476bd7c</v>
+            </a>
+          </d>
+        </o>
+      </d>
+      <d n="Values" t="Hashtable" />
+    </o></Data><TypeList><Type n="Guid">System.Guid</Type><Type n="Guid[]">System.Guid[]</Type><Type n="Hashtable">System.Collections.Hashtable</Type><Type n="Int32">System.Int32</Type><Type n="OptionKey">{54dd0eac-a6d8-46f2-8c27-2f43c7e49861}</Type><Type n="String">System.String</Type></TypeList></XmlArchive></PlcProjectOptions>
+  </ProjectExtensions>
+</Project>

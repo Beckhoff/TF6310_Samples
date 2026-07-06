@@ -1,0 +1,70 @@
+﻿<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.0.23">
+  <POU Name="FB_FrameFifo" Id="{04ef42a8-cbae-41b8-bc2e-6fa1fd3e8fbc}">
+    <Declaration><![CDATA[(* Tx/Rx (string data) fifo control function block *)
+FUNCTION_BLOCK FB_FrameFifo
+VAR_INPUT
+	bLog		: BOOL := FALSE;(* TRUE => Enable log message output, FALSE => Disable *)
+	sPrefix		: STRING := 'Unknown::';(* Log message description string (allows the identification of log message source) *)
+	stPut		: ST_FrameFifoEntry;(* Frame entry to add (write) to the buffer *)
+END_VAR
+VAR_OUTPUT
+	bOk			: BOOL;(* TRUE = New entry added or removed succesfully, FALSE = Fifo overflow or fifo empty *)
+	stGet		: ST_FrameFifoEntry;(* Frame entry removed (read) from fifo *)
+	nCount		: UDINT := 0;(* Number of fifo entries *)
+END_VAR
+VAR
+	fbBuffer 	: FB_MemRingBuffer;(* Basic (lower level) string buffer control function block *)
+	buffer		: ARRAY[0..PLCPRJ_BUFFER_SIZE] OF BYTE;(* Internal buffer memory *)
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[;]]></ST>
+    </Implementation>
+    <Action Name="RemoveHead" Id="{5501551f-c17e-4732-8b35-52d09fe03806}">
+      <Implementation>
+        <ST><![CDATA[(* Removes oldest fifo entry *)
+IF nCount = 0 THEN
+	stGet.sMessage := '';
+	stGet.stRemoteAddr.nPort := 0;
+	stGet.stRemoteAddr.sAddr := '';
+	bOk := FALSE;
+	RETURN;
+END_IF
+
+fbBuffer.A_RemoveHead( pBuffer:= ADR(buffer), cbBuffer:= SIZEOF(buffer),
+						pRead := ADR( stGet ), cbRead := SIZEOF( stGet ),
+						bOk=>bOk, nCount=>nCount );
+
+]]></ST>
+      </Implementation>
+    </Action>
+    <Action Name="Clear" Id="{af70fdd4-15fe-409e-ad0b-42ea17de44aa}">
+      <Implementation>
+        <ST><![CDATA[(* Clears all fifo entries *)
+stGet.sMessage := '';
+stGet.stRemoteAddr.nPort := 0;
+stGet.stRemoteAddr.sAddr := '';
+fbBuffer.A_Reset( pBuffer := ADR( buffer ), cbBuffer := SIZEOF( buffer ), 
+					bOk=>bOk, nCount=>nCount ); 
+]]></ST>
+      </Implementation>
+    </Action>
+    <Action Name="AddTail" Id="{d8682716-478a-45b5-a806-cda17e33e3c6}">
+      <Implementation>
+        <ST><![CDATA[(* Adds new fifo entry *)
+fbBuffer.A_AddTail( pBuffer:= ADR(buffer), cbBuffer:= SIZEOF(buffer),
+					pWrite:= ADR( stPut ), cbWrite := SIZEOF( stPut ), 
+					bOk=>bOk, nCount=>nCount );
+IF bOk AND bLog THEN(* Log message *)
+	ADSLOGSTR( ADSLOG_MSGTYPE_HINT OR ADSLOG_MSGTYPE_LOG, 
+			CONCAT( CONCAT( sPrefix, SOCKETADDR_TO_STRING(stPut.stRemoteAddr) ), '>>"%s"' ),
+			stPut.sMessage );
+END_IF
+
+
+]]></ST>
+      </Implementation>
+    </Action>
+    <ObjectProperties />
+  </POU>
+</TcPlcObject>
